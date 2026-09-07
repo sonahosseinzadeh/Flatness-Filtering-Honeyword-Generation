@@ -97,16 +97,17 @@ still contain the real password. Their $F_{\text{rank}}$ rises to
 about 0.296, part-way toward the ideal $0.5$.
 
 \paragraph{Ratio filters.}
-Prescreen-Ratio and Hybrid-Ratio use the multiplicative band
-$s(w)/s(w^{*}) \le \tau_{\text{band-ratio}}$ during candidate
-screening. They are the strongest genuine defence, pushing
-$\mathrm{ASR}@5$ down to 0.341 (Prescreen-Ratio) and 0.293
-(Hybrid-Ratio) and lifting $F_{\text{rank}}$ to 0.422 and
-0.462 respectively --- close to the ideal middle value of
-$0.5$ that characterises a near-uniform ranking. Unlike the GAN
-(\Cref{sec:results-gan}), the ratio filters reach low $\mathrm{ASR}$
-\emph{and} a central $F_{\text{rank}}$ at the same time, which is what
-distinguishes genuine flatness from inverted distinguishability.
+Prescreen-Ratio and Hybrid-Ratio use the two-sided multiplicative band
+$\tfrac{1}{\tau_{\text{band-ratio}}}\, s(w^{*}) \le s(w) \le
+\tau_{\text{band-ratio}}\, s(w^{*})$ during candidate screening. They
+are the strongest genuine defence, pushing $\mathrm{ASR}@5$ down to
+0.341 (Prescreen-Ratio) and 0.293 (Hybrid-Ratio) and lifting
+$F_{\text{rank}}$ to 0.422 and 0.462 respectively --- close to the ideal
+middle value of $0.5$ that characterises a near-uniform ranking. Unlike
+the GAN (\Cref{sec:results-gan}), the ratio filters reach low
+$\mathrm{ASR}$ \emph{and} a central $F_{\text{rank}}$ at the same time,
+which is what distinguishes genuine flatness from inverted
+distinguishability.
 
 \input{tables/summary}
 
@@ -221,7 +222,7 @@ with $F_{\text{rank}}$.
 \input{tables/gan}
 
 For HoneyGen Baseline, following the CNN's top-ranked guesses succeeds
-$75.4\%$ of the time and $F_{\text{rank}}$ is $0.169$ --- the real
+$74.6\%$ of the time and $F_{\text{rank}}$ is $0.169$ --- the real
 password sits near the top, so the attacker just follows the CNN. For
 the ratio filters both attacker directions land near the
 random-guessing rate and $F_{\text{rank}}$ is close to the ideal $0.5$;
@@ -317,11 +318,12 @@ configurations are the ratio filters read through the two-stage
 criterion of \Cref{sec:results-cost}: the flattest methods that remain
 deployable.
 
-\emph{Fourth, the GAN's apparent success is a distributional artifact.}
+Fourth, the GAN's apparent success is a distributional artifact.
 Following the CNN naively, the GAN looks like the flattest method, but
-its $F_{\text{rank}}$ near $1$ shows the real password is ranked at the
-bottom, so a rational attacker who inverts the ranking reaches
-$\mathrm{ASR}@5 = 0.872$ (\Cref{eq:rational}); the same bias is exposed
+$F_{\text{rank}}$ far from the ideal middle value of $0.5$ ---
+$0.920$, not $0$ --- shows the real password is ranked at the bottom
+rather than the top, so a rational attacker who inverts the ranking
+reaches $\mathrm{ASR}@5 = 0.872$ (\Cref{eq:rational}); the same bias is exposed
 by the mixed-corpus attacker, and the GAN is also the most
 distinguishable method under the frequency attacker. Any security claim
 that treats the GAN as a strong flatness-preserving generator has to

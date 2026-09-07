@@ -1,4 +1,4 @@
-% ===== GAN artifact table (N_train=10000) =====
+% ===== GAN artifact table (N_train=10000, N_eval=2000) =====
 \begin{table}[t]
   \centering
   \begin{tabular}{lrrrr}
@@ -6,9 +6,9 @@
     \textbf{Method} & Follow-CNN & Anti-CNN & Reported & $F_{\text{rank}}$ \\
      & $\mathrm{ASR}@5$ & $\mathrm{ASR}@5$ & $\mathrm{ASR}@5$ & \\
     \midrule
-    HoneyGen Baseline & 0.754 & 0.035 & 0.754 & 0.164 \\
-    HoneyGen + Prescreen-Ratio & 0.287 & 0.233 & 0.287 & 0.466 \\
-    HoneyGen + Hybrid-Ratio & 0.243 & 0.232 & 0.250 & 0.500 \\
+    HoneyGen Baseline & 0.746 & 0.038 & 0.746 & 0.169 \\
+    HoneyGen + Prescreen-Ratio & 0.341 & 0.180 & 0.341 & 0.422 \\
+    HoneyGen + Hybrid-Ratio & 0.293 & 0.202 & 0.293 & 0.462 \\
     GAN (Self-Trained) & 0.025 & 0.872 & 0.872 & 0.920 \\
     \bottomrule
   \end{tabular}
@@ -16,9 +16,9 @@
   \emph{Follow-CNN} guesses the CNN's top-ranked candidates,
   \emph{Anti-CNN} guesses its bottom-ranked ones, and \emph{Reported}
   is the rational-attacker value of \Cref{eq:rational}. For the baseline
-  and the ratio filters the two strategies agree with $F_{\text{rank}}$:
-  values near $0.5$ mean the real password sits in the middle, so
-  neither direction helps much. The GAN is the exception --- its
+  and the ratio filters, Follow-CNN is the larger of the two directions
+  and $F_{\text{rank}}$ sits near or above $0.4$, so the reported value
+  simply follows the CNN. The GAN is the exception --- its
   $F_{\text{rank}}$ near $1$ places the real password at the bottom, so
   Follow-CNN succeeds only $2.5\%$ of the time while Anti-CNN reaches
   $87\%$. Its low Follow-CNN score is inverted distinguishability, not

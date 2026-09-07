@@ -68,7 +68,7 @@
 \contentsline {section}{\numberline {4.8}Experimental Protocol and Parameters}{35}{section.4.8}%
 \contentsline {subsection}{\numberline {4.8.1}Locked Parameters}{35}{subsection.4.8.1}%
 \contentsline {subsection}{\numberline {4.8.2}Threshold Selection and the Accept-Rate / ASR Trade-off}{36}{subsection.4.8.2}%
-\contentsline {subsection}{\numberline {4.8.3}Metrics and Statistical Treatment}{36}{subsection.4.8.3}%
+\contentsline {subsection}{\numberline {4.8.3}Metrics and Statistical Treatment}{37}{subsection.4.8.3}%
 \contentsline {subsection}{\numberline {4.8.4}Robustness Check}{37}{subsection.4.8.4}%
 \contentsline {chapter}{Chapter\ \numberline {5}Results}{38}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Setup}{38}{section.5.1}%

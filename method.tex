@@ -382,10 +382,12 @@ acceptance at the sweetword-set level.
 HoneyGen Baseline restricted to its password-model component (the
 \texttt{honeygen-model-only} configuration), followed by both
 candidate-level pre-screening and set-level rejection sampling. The
-Add variant uses an additive band condition
-$|s(w) - s(w^{*})| \le \tau_{\text{band}}$, and the Ratio variant uses
-a multiplicative band condition
-$s(w) / s(w^{*}) \le \tau_{\text{band-ratio}}$.
+Add variant uses the additive band condition
+$|\, s(w) - s(w^{*}) \,| \le \tau_{\text{band}}$, and the Ratio variant
+uses the two-sided multiplicative band condition
+$\tfrac{1}{\tau_{\text{band-ratio}}}\, s(w^{*}) \le s(w) \le
+\tau_{\text{band-ratio}}\, s(w^{*})$ with $\tau_{\text{band-ratio}} > 1$,
+both defined in \Cref{sec:method-filter}.
 
 \paragraph{HoneyGen Hybrid-Add and Hybrid-Ratio.}
 Identical to the Prescreen variants except that the candidate stream
@@ -394,8 +396,8 @@ password-model only. Both use the two-stage filter.
 
 \subsection{GAN}
 
-A generator adversarial network trained separately for each
-evaluation-set size. Candidates are drawn from the trained generator,
+A generative adversarial network trained separately for each
+training-set size. Candidates are drawn from the trained generator,
 followed by oversampling by a factor of approximately five,
 deduplication, and removal of malformed entries; a random subset of
 the survivors is retained as the $k-1$ honeywords. The GAN is not
@@ -581,8 +583,11 @@ generator drives all three terms to $t/k$, so the reported value is
 $t/k$. A generator whose real password the CNN systematically ranks low
 --- notably the GAN of \Cref{sec:results-gan} --- is caught by the
 inverted term, which reports the high success such a set really allows
-instead of masking it at $t/k$. This is the value used in every ASR
-figure and table in \Cref{ch:results}.
+instead of masking it at $t/k$. This is the value reported throughout
+\Cref{ch:results}; the GAN-focused comparisons in
+\Cref{sec:results-gan} additionally break it into its follow-the-CNN and
+inverted components, and report the raw per-attacker success, so that
+the inversion behind the GAN's number is visible rather than hidden.
 
 \section{Experimental Protocol and Parameters}
 \label{sec:method-protocol}

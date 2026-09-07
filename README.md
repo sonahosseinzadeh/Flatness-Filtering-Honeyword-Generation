@@ -1,11 +1,7 @@
 # Flatness-Filtering-Honeyword-Generation
 MSc Computer Engineering thesis on flatness filtering for honeyword generation using CNN
-
-# Flatness Filtering for Honeyword Generation
-
-MSc Computer Engineering Thesis  
-Software and Computing Platforms  
 University of Genoa
+
 
 **Author:** Sona Hosseinzadeh Mahdavi  
 **Advisor:** Alessandro Armando  

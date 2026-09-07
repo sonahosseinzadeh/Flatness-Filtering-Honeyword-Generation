@@ -8,8 +8,6 @@ University of Genoa
 **Examiner:** Matteo Dell’Amico  
 **Year:** 2026
 
----
-
 ## Overview
 
 This repository contains the research materials, experimental
@@ -27,7 +25,6 @@ screened individually and then evaluated at the sweetword-set level.
 Sets that fail the defined flatness conditions are rejected and
 regenerated.
 
----
 
 ## Research Objective
 
@@ -39,7 +36,6 @@ The study evaluates multiple honeyword generation methods against
 character-level CNN attackers and compares their attacker success
 rates with the random-guessing baseline.
 
----
 
 ## Main Components
 
@@ -56,8 +52,6 @@ The project contains:
 - Experimental results
 - Thesis drafts and final thesis
 
----
-
 ## Honeyword Generators
 
 The benchmark includes ten generation methods:
@@ -73,7 +67,6 @@ The benchmark includes ten generation methods:
 9. HoneyGen Hybrid-Ratio
 10. Self-trained GAN
 
----
 
 ## Filtering Approach
 
@@ -99,7 +92,6 @@ conditions.
 Otherwise, the set is discarded and regenerated until acceptance
 or until the regeneration limit is reached.
 
----
 
 ## Evaluation
 
@@ -121,7 +113,6 @@ robustness evaluation using:
 - Mixed-corpus CNN
 - Frequency-based ranker
 
----
 
 ## Experimental Setup
 
@@ -142,7 +133,6 @@ The oracle and attacker use disjoint corpora.
 The attacker is trained independently and is not used during
 the filtering stage.
 
----
 
 ## Repository Structure
 

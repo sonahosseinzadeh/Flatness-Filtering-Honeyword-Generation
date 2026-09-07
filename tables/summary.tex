@@ -1,0 +1,29 @@
+% ===== Combined summary table (N_train=10000) =====
+\begin{table}[t]
+  \centering\small
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    \textbf{Method} & $\mathrm{ASR}@5$ & $F_{\text{rank}}$ & $F_{\text{ent}}$
+      & $F_{\varepsilon}$ & Accept & Tries \\
+    \midrule
+    Chaffing-by-Tweaking & 0.678 & 0.208 & 0.984 & 0.207 & 100\% & 1.00 \\
+    Chaffing-with-Password-Model & 0.755 & 0.171 & 0.971 & 0.125 & 100\% & 1.00 \\
+    Chaffing-with-Hybrid-Model & 0.743 & 0.171 & 0.970 & 0.132 & 100\% & 1.00 \\
+    HoneyGen Baseline & 0.746 & 0.169 & 0.970 & 0.130 & 100\% & 1.00 \\
+    \addlinespace
+    HoneyGen + Set-Filter & 0.610 & 0.235 & 0.979 & 0.189 & 54.5\% & 3.51 \\
+    HoneyGen + Prescreen-Add & 0.525 & 0.296 & 0.990 & 0.329 & 84.6\% & 1.00 \\
+    HoneyGen + Prescreen-Ratio & 0.341 & 0.422 & 0.992 & 0.505 & 54.1\% & 1.00 \\
+    HoneyGen + Hybrid-Add & 0.510 & 0.296 & 0.989 & 0.328 & 83.3\% & 1.26 \\
+    HoneyGen + Hybrid-Ratio & 0.293 & 0.462 & 0.991 & 0.569 & 47.9\% & 2.68 \\
+        GAN (Self-Trained) & 0.872 & 0.920 & 0.989 & 0.958 & 100\% & 1.00 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Consolidated view at $N_{\text{train}}=10000$ under the CNN
+  attacker: security ($\mathrm{ASR}@5$, lower is flatter), flatness
+  criteria ($F_{\text{rank}}$ and $F_{\varepsilon}$ near $0.5$ and high
+  $F_{\text{ent}}$ indicate near-uniform sets), and cost (accept rate and
+  average regeneration attempts). Unfiltered methods have no filter and are
+  shown at 100\% / 1.00.}
+  \label{tab:summary2000}
+\end{table}

@@ -1,0 +1,32 @@
+% ===== Cross-attacker CNN vs Freq (N_train=10000) =====
+\begin{table}[t]
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    & \multicolumn{2}{c}{\textbf{CNN attacker}} & \multicolumn{2}{c}{\textbf{Freq. attacker}} \\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-5}
+    \textbf{Method} & $\mathrm{ASR}@1$ & $\mathrm{ASR}@5$ & $\mathrm{ASR}@1$ & $\mathrm{ASR}@5$ \\
+    \midrule
+    Chaffing-by-Tweaking & 0.281 & 0.678 & 0.216 & 0.386 \\
+    Chaffing-with-Password-Model & 0.304 & 0.755 & 0.050 & 0.250 \\
+    Chaffing-with-Hybrid-Model & 0.337 & 0.743 & 0.083 & 0.319 \\
+    HoneyGen Baseline & 0.346 & 0.746 & 0.084 & 0.319 \\
+    HoneyGen + Set-Filter & 0.179 & 0.610 & 0.086 & 0.322 \\
+    HoneyGen + Prescreen-Add & 0.144 & 0.525 & 0.050 & 0.250 \\
+    HoneyGen + Prescreen-Ratio & 0.071 & 0.341 & 0.050 & 0.250 \\
+    HoneyGen + Hybrid-Add & 0.141 & 0.510 & 0.068 & 0.286 \\
+    HoneyGen + Hybrid-Ratio & 0.050 & 0.293 & 0.076 & 0.305 \\
+        GAN (Self-Trained) & 0.745 & 0.872 & 0.225 & 0.388 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Cross-attacker comparison at $N_{\text{train}}=10000$
+  (rational-attacker $\mathrm{ASR}$, \Cref{eq:rational}).
+  The frequency attacker separates the methods far less sharply than the
+  CNN; the filtered HoneyGen variants stay near the frequency floor. The
+  GAN is distinguishable under both attackers --- most strongly by the
+  CNN, which reaches $0.872$ once its ranking is inverted (the real
+  password sits at the bottom), and also by the frequency attacker at
+  $0.388$; it is flat under neither, as discussed in
+  \Cref{sec:results-gan}.}
+  \label{tab:crossatt}
+\end{table}

@@ -1,0 +1,688 @@
+\chapter{Methodology}
+\label{ch:method}
+
+This chapter describes the construction we use to enforce set-level
+flatness against a learned attacker. \Cref{sec:method-overview} states
+the pipeline and its main design choices. \Cref{sec:method-formalism}
+formalizes the attacker-induced distribution and the flatness metrics
+computed on top of it. \Cref{sec:method-corpora} describes the corpora
+and the disjoint oracle/attacker split. \Cref{sec:method-cnn} specifies
+the character-level CNN that plays the dual role of defensive oracle
+during filtering and adversary during evaluation. \Cref{sec:method-gens}
+describes the ten honeyword generators we benchmark.
+\Cref{sec:method-filter} presents the hybrid flatness-filtering
+algorithm. \Cref{sec:method-coinflip} describes the evaluation
+protocol and the rational-attacker floor applied to reported ASR.
+\Cref{sec:method-protocol} lists the locked parameters used by every
+experiment in \Cref{ch:results}.
+
+\section{Overview}
+\label{sec:method-overview}
+
+For each real password $w^{*}$, a generator produces $k-1$ candidate
+honeywords which are combined with $w^{*}$ into a sweetword set
+$S = \{w_1, \ldots, w_k\}$ of size $k = 20$. Two independently trained
+character-level CNNs interact with $S$ at different points in the
+pipeline. The first, the \emph{oracle}, is used at storage time by the
+filtering algorithm to decide whether $S$ satisfies the flatness
+conditions defined in \Cref{sec:method-formalism} and, if not, to
+trigger regeneration. The second, the \emph{attacker}, is used at
+evaluation time to measure the attacker success rate on the accepted
+sets. The two networks share the same architecture but are trained on
+disjoint corpora with different random seeds
+(\Cref{sec:method-cnn}), which is what allows us to report ASR against
+an attacker that is not the model the filter was tuned against.
+
+Filtering is performed once, at password storage time, and is never
+invoked during authentication. The construction is generator-agnostic:
+we apply the same filter, with the same thresholds, on top of ten
+distinct honeyword generators, including one (HoneyGen Baseline) that
+performs no filtering and serves as the reference point for measuring
+the effect of the filter.
+
+\section{Attacker-Relative Set-Level Flatness}
+\label{sec:method-formalism}
+
+\subsection{Sweetword Set and Attacker Model}
+
+A sweetword set is a size-$k$ multiset
+$S = \{w_1, \ldots, w_k\}$ in which exactly one element $w^{*}$ is the
+real password and the remaining $k-1$ elements are honeywords produced
+by a generator. The attacker $A$ is a binary classifier trained on
+labeled examples of the form $(w, y)$ with $y = 1$ for real passwords
+and $y = 0$ for honeywords. For every candidate $w_i$, the classifier
+outputs an independent score
+%
+\begin{equation}
+s_i \;=\; s(w_i) \;=\; P_A(y = 1 \mid w_i) \in [0, 1].
+\end{equation}
+%
+The scores are per-candidate probabilities from a binary classifier,
+not a distribution over $S$. In particular
+$\sum_{i} s_i \neq 1$ in general, and the classifier processes each
+$w_i$ without seeing any other member of $S$.
+
+\subsection{Set-Level Induced Distribution}
+
+The attacker's actual decision problem is comparative: given all of
+$S$, choose one candidate. We model this comparison by renormalizing
+the per-candidate scores to form a distribution over $S$:
+%
+\begin{equation}
+q_i \;=\; \frac{s_i}{\sum_{j=1}^{k} s_j}, \qquad
+\sum_{i=1}^{k} q_i \;=\; 1.
+\label{eq:q}
+\end{equation}
+%
+The vector $q = (q_1, \ldots, q_k)$ is the \emph{attacker-induced
+distribution} on $S$. Under ideal flatness $q$ is uniform, so
+$q_i = 1/k$ for every $i$. We write $q_{\text{real}}$ for the entry of
+$q$ corresponding to $w^{*}$ and use it as the central quantity that
+the filter constrains.
+
+\subsection{Flatness Metrics}
+
+Four quantities computed from the pair $(s, q)$ characterize how far
+$S$ deviates from flatness under $A$.
+
+\paragraph{Rank-based flatness.}
+Order the candidates by $s_i$ in decreasing order and let
+$\text{rank}(w^{*})$ be the position of $w^{*}$ in that order. We
+define
+%
+\begin{equation}
+F_{\text{rank}} \;=\; \frac{\text{rank}(w^{*}) - 1}{k - 1} \in [0, 1].
+\end{equation}
+%
+A value of $0$ means the attacker ranks $w^{*}$ first (worst case for
+the defender); a value of $1$ means it ranks $w^{*}$ last; the
+expected value under a uniform ranker is $1/2$.
+
+\paragraph{Normalized entropy.}
+The Shannon entropy of $q$ divided by its maximum $\log k$:
+%
+\begin{equation}
+F_{\text{ent}} \;=\; \frac{H(q)}{\log k}
+\;=\; -\frac{1}{\log k}\sum_{i=1}^{k} q_i \log q_i.
+\end{equation}
+%
+$F_{\text{ent}} = 1$ if and only if $q$ is uniform. Entropy captures
+global smoothness of $q$ but does not by itself constrain which entry
+of $q$ is the largest, and a set can have $F_{\text{ent}}$ close to
+$1$ while still assigning the top rank to $w^{*}$. We therefore treat
+$F_{\text{ent}}$ as a secondary stabilizing condition rather than a
+primary one.
+
+\paragraph{Gap metrics.}
+Let $s_{(1)} \ge s_{(2)} \ge \cdots \ge s_{(k)}$ be the sorted raw
+scores. The top gap
+%
+\begin{equation}
+\Delta_{\text{top}} \;=\; s_{(1)} - s_{(2)}
+\end{equation}
+%
+measures how strongly the attacker prefers its top candidate over the
+runner-up, and the real gap
+%
+\begin{equation}
+\Delta_{\text{real}} \;=\; s_{(1)} - s(w^{*})
+\end{equation}
+%
+measures how far the real password falls below the top score. Gap
+metrics are computed on raw scores rather than on $q$ because ranking
+is invariant under the positive rescaling of \Cref{eq:q} and the raw
+scores preserve the absolute magnitude of the classifier's preference.
+
+\paragraph{$\varepsilon$-flatness.}
+Let $q_{\max} = \max_i q_i$ denote the largest entry of the induced
+distribution. The set $S$ is \emph{$\varepsilon$-flat} under $A$ if
+%
+\begin{equation}
+q_{\max} \;\le\; \frac{1}{k} + \varepsilon.
+\label{eq:eps-flat}
+\end{equation}
+%
+Setting $\varepsilon = 0$ forces $q_{\max} \le 1/k$, which together
+with $\sum_i q_i = 1$ recovers exact uniformity of the whole
+distribution; increasing $\varepsilon$ relaxes the bound. Because
+$q_{\text{real}} \le q_{\max}$, this constraint upper-bounds the
+attacker's posterior on every sweetword, including the true credential,
+and is the primary security constraint enforced by the filter. This
+additive slack $\varepsilon$ on the maximum entry differs from the
+classical multiplicative bound $(1+\varepsilon)/k$ of
+\Cref{sec:bg-flatness}: the two coincide at $\varepsilon = 0$, but for
+$\varepsilon > 0$ the additive form places the threshold at
+$1/k + \varepsilon$ rather than $(1+\varepsilon)/k$, so the same
+numerical $\varepsilon$ is a looser bound here. We adopt the additive
+form because it acts directly on the peak of the attacker-induced
+distribution over the set, whereas the classical bound is stated on the
+attacker's first-guess success probability.
+
+\paragraph{Attacker success rate.}
+Given the ranking induced by $s$, the attacker success rate at rank
+$t$ is
+%
+\begin{equation}
+\mathrm{ASR}@t \;=\; \Pr\!\left[\, \text{rank}(w^{*}) \le t \,\right],
+\end{equation}
+%
+where the probability is taken over the sample of evaluation sets.
+Under ideal flatness $\mathrm{ASR}@t = t/k$. We report
+$\mathrm{ASR}@1$, $\mathrm{ASR}@3$, and $\mathrm{ASR}@5$ throughout
+\Cref{ch:results}, with $\mathrm{ASR}@5$ as the primary security
+metric.
+
+\subsection{Operational Definition of Flatness}
+
+The set $S$ is declared flat under the attacker $A$ if it satisfies
+\Cref{eq:eps-flat} together with two auxiliary conditions on
+$F_{\text{ent}}$ and $\Delta_{\text{top}}$. The three thresholds and
+their justification are given in \Cref{sec:method-protocol}. Sets that
+fail any of the three conditions are rejected by the filter of
+\Cref{sec:method-filter}.
+
+\section{Corpora and Splits}
+\label{sec:method-corpora}
+
+\subsection{Sources}
+
+The corpus is the cleaned RockYou leak, from which we draw disjoint
+oracle and attacker subsets after deduplication, encoding validation,
+and truncation to the CNN's input length. The oracle corpora are the
+three training sizes $N_{\text{train}} \in \{2000,\,5000,\,10000\}$
+used throughout \Cref{ch:results}; the attacker corpus is a fixed
+disjoint subset of $5000$ passwords, split $80/10/10$ and reused
+unchanged for every oracle size (the training composition is detailed
+in \Cref{sec:method-cnn}). All entries are unprocessed leaked passwords; no case folding,
+character substitution, or semantic normalization is applied beyond
+the length truncation. Extending the benchmark to a second corpus such
+as \emph{darkc0de} is left as future work (\Cref{ch:conclusion}).
+
+\subsection{Disjoint Oracle and Attacker Corpora}
+
+The pipeline uses two disjoint corpora. The \emph{oracle corpus}
+supplies the real passwords $w^{*}$ from which sweetword sets are
+built, and also provides the training data for the oracle CNN used by
+the filter; a separate oracle is trained for each generator size
+$N_{\text{train}}$. The \emph{attacker corpus}, drawn from the same
+source but disjoint from the oracle corpus, provides the training data
+for the attacker CNN used to measure $\mathrm{ASR}$ on the accepted
+sets. Unlike the oracle, the attacker is trained once on the training
+split of a fixed $5000$-password attacker corpus (\Cref{sec:method-cnn})
+and reused across every generator size, so that a single, consistent
+adversary evaluates all of them. Because
+the attacker is trained on passwords that neither the generators nor
+the oracle have seen, its evaluation performance reflects
+generalization to unseen inputs rather than memorization of the sets it
+will later be asked to rank. This choice raises the baseline
+$\mathrm{ASR}$ compared to a shared-corpus setup, but the resulting
+numbers are the ones that matter for a real deployment.
+
+\subsection{Set-Level Splits}
+
+Within the oracle corpus, real passwords are partitioned into
+training, validation, and test subsets. Sweetword sets are constructed
+for every real password in each subset, and all sets are concatenated
+into a single evaluation stream with globally unique set identifiers.
+This \texttt{EVAL\_FULL = True} configuration is required to avoid
+staircase artifacts in the ASR curve at small evaluation sizes, which
+would otherwise arise from evaluating only the tail of a single split.
+
+\section{The CNN Discriminator}
+\label{sec:method-cnn}
+
+\subsection{Architecture}
+
+The classifier used for both oracle and attacker roles is a
+character-level convolutional network. Each password is truncated or
+right-padded to a fixed length and mapped through a character
+embedding of dimension $64$. Two one-dimensional convolutional layers
+with ReLU activations extract local $n$-gram features, followed by
+max-pooling to reduce dimensionality. A fully connected layer projects
+to a two-dimensional output over which a softmax produces
+$P(\text{real} \mid w)$ and $P(\text{honey} \mid w)$. The architecture
+is inspired by the learned-attacker paradigm of
+\textcite{dani2024passfilter} but is trained independently and does
+not reuse any released weights.
+
+\subsection{Training}
+
+The classifier is trained as a binary classifier with cross-entropy
+loss
+%
+\begin{equation}
+\mathcal{L} \;=\; -\bigl(y \log s \;+\; (1 - y) \log (1 - s)\bigr).
+\end{equation}
+%
+Positive examples are real passwords and negative examples are
+honeywords produced by the HoneyGen Baseline generator described in
+\Cref{subsec:method-honeygen}, which combines the FastText password
+model with rule-based tweaking. Training the classifier against
+HoneyGen negatives calibrates it to the dominant family of decoys
+studied in this thesis and produces a strong and realistic adversary.
+The oracle is trained on the training split of its own
+$N_{\text{train}}$ corpus. The attacker is trained once on a fixed
+$5000$-password subset of RockYou, disjoint from every oracle corpus
+and split $80/10/10$ into training, validation, and test partitions;
+its training set is built by running HoneyGen Baseline with $k = 20$ on
+the $4000$ real passwords of the training partition, producing $19$
+honeywords per real password. The attacker CNN is therefore trained on
+$4000$ real and $76{,}000$ honeyword examples, and this single trained
+attacker is reused to evaluate every generator at every training size.
+Training uses batch size $\text{BS\_CNN} = 256$ and runs for ten epochs
+for both oracle and attacker roles.
+
+\subsection{Dual Role and Seed Separation}
+
+The two networks share the architecture and training procedure just
+described but differ in three respects. First, they are trained on
+disjoint corpora (\Cref{sec:method-corpora}). Second, the
+attacker uses a seed offset of $7777$ relative to the oracle, so the
+two networks are not identical even where their training procedures
+coincide. Third, only the oracle interacts with the filter at storage
+time; the attacker is invoked exclusively at evaluation time and never
+observes the acceptance decisions the oracle made.
+
+\subsection{Robustness Attackers}
+\label{sec:method-robustness-attackers}
+
+The CNN above is the attacker the filter is tuned against. To test
+whether the flatness it enforces survives a change of attacker, we
+evaluate the accepted sets against two further attackers that the filter
+never saw. Both are used only at evaluation time, on sets the filter has
+already accepted; neither takes part in filtering.
+
+\paragraph{Frequency ranker.}
+The frequency attacker is a classical, non-learned baseline. It first
+builds a frequency table from the attacker corpus by counting how often
+each password occurs. To rank a sweetword set it scores each of the $k$
+candidates by that count --- a common password scores high, a rare or
+never-seen one scores low (unseen candidates receive the lowest score)
+--- and then guesses the candidates from most to least frequent, on the
+assumption that a real password is more likely to be a popular one. It
+uses no neural network and no training beyond counting. This is exactly
+why it is a useful control: it is the ranker-style attacker that most
+earlier honeyword evaluations assumed, so comparing it against the CNN
+shows how much a learned discriminator adds over simple popularity.
+
+\paragraph{Mixed-corpus CNN.}
+The mixed-corpus attacker has the same architecture and training
+procedure as the oracle CNN, but its negative examples are drawn from
+several generator families together --- Chaffing-by-Tweaking, the
+Password-Model, HoneyGen, and the GAN --- instead of from HoneyGen
+Baseline alone. Training on a broader mix stops the attacker from
+over-fitting to one decoy family and lets it flag sets, such as the
+GAN's, that a single-family CNN misses (\Cref{sec:results-gan}).
+
+\section{Honeyword Generation Methods}
+\label{sec:method-gens}
+
+We benchmark ten honeyword generators. Six of them are unfiltered
+baselines that expose how each generation strategy behaves against the
+learned attacker; four are filtered variants that combine a generator
+with the pre-screening or rejection sampling stages of
+\Cref{sec:method-filter}.
+
+\subsection{Chaffing Family}
+\label{subsec:method-chaffing}
+
+The three \emph{chaffing} methods derive candidates directly from
+$w^{*}$ and do not perform any oracle-gated selection.
+
+\paragraph{Chaffing-by-Tweaking.}
+Rule-based edits applied to $w^{*}$: character-class substitutions on
+letters, digits, and symbols; suffix and prefix modifications; and
+short case flips. Candidates preserve the length structure of the real
+password.
+
+\paragraph{Chaffing-with-Password-Model.}
+Nearest neighbors of $w^{*}$ in the FastText embedding space, using
+the skipgram model with \texttt{minCount} = 1 and \texttt{minn} = 2
+trained on the oracle corpus. Candidates share sub-word structure with
+$w^{*}$ but need not preserve its length.
+
+\paragraph{Chaffing-with-Hybrid-Model.}
+This generator combines the two streams above. For a real password
+$w^{*}$ it draws candidates from both sources -- the length-preserving
+rule-based edits of Chaffing-by-Tweaking and the FastText nearest
+neighbors of Chaffing-with-Password-Model -- and forms the $k-1$
+decoys of each sweetword set from this combined pool. A resulting set
+can therefore contain both surface-level variants of $w^{*}$ (from the
+tweaking stream, which keep its length and character structure) and
+sub-word-similar neighbors (from the password-model stream, which share
+its morphology but not necessarily its length). Mixing the two makes
+the accepted sets harder for an attacker to characterize with a single
+heuristic, since no one edit rule or embedding-distance cutoff explains
+all the decoys. Because both streams reuse the same underlying
+components as HoneyGen Baseline, the random seed that governs how the
+two are combined is offset by $5000$ from the base seed; this ensures
+the hybrid method produces a distinct sample rather than reproducing
+the sets of HoneyGen Baseline.
+
+\subsection{HoneyGen Family}
+\label{subsec:method-honeygen}
+
+The five \emph{HoneyGen} methods build on the algorithm of
+\textcite{dionysiou2021honeygen}, which combines the FastText password
+model with rule-based tweaking and applies frequency-based pruning to
+the resulting candidate pool.
+
+\paragraph{HoneyGen Baseline.}
+The HoneyGen algorithm as described by
+\textcite{dionysiou2021honeygen}, without any oracle interaction. This
+is the reference point against which the effect of every filter is
+measured.
+
+\paragraph{HoneyGen Set-Filter.}
+HoneyGen Baseline followed by set-level rejection sampling only.
+Candidate honeywords are used as produced; the oracle decides
+acceptance at the sweetword-set level.
+
+\paragraph{HoneyGen Prescreen-Add and Prescreen-Ratio.}
+HoneyGen Baseline restricted to its password-model component (the
+\texttt{honeygen-model-only} configuration), followed by both
+candidate-level pre-screening and set-level rejection sampling. The
+Add variant uses an additive band condition
+$|s(w) - s(w^{*})| \le \tau_{\text{band}}$, and the Ratio variant uses
+a multiplicative band condition
+$s(w) / s(w^{*}) \le \tau_{\text{band-ratio}}$.
+
+\paragraph{HoneyGen Hybrid-Add and Hybrid-Ratio.}
+Identical to the Prescreen variants except that the candidate stream
+is the full HoneyGen hybrid (password model plus tweaking) rather than
+password-model only. Both use the two-stage filter.
+
+\subsection{GAN}
+
+A generator adversarial network trained separately for each
+evaluation-set size. Candidates are drawn from the trained generator,
+followed by oversampling by a factor of approximately five,
+deduplication, and removal of malformed entries; a random subset of
+the survivors is retained as the $k-1$ honeywords. The GAN is not
+gated by the oracle. Its results in \Cref{ch:results} require a
+qualification that we discuss there.
+
+\section{Hybrid Flatness-Filtering Algorithm}
+\label{sec:method-filter}
+
+The filter has two stages. Candidate-level pre-screening removes
+individually distinguishable decoys before a sweetword set is
+assembled, and set-level rejection sampling discards sets whose
+induced distribution violates one of the flatness conditions from
+\Cref{sec:method-formalism}. Both stages use the oracle CNN of
+\Cref{sec:method-cnn}.
+
+\subsection{Candidate-Level Pre-Screening}
+
+For each candidate honeyword $w$, the oracle produces a score
+$s(w) \in [0, 1]$. The pre-screening condition compares this score to
+the score $s(w^{*})$ of the real password within a band around it:
+the \emph{additive} band accepts $w$ when
+%
+\begin{equation}
+|\, s(w) - s(w^{*}) \,| \;\le\; \tau_{\text{band}},
+\end{equation}
+%
+and the \emph{multiplicative} band accepts $w$ when its score lies
+within a factor $\tau_{\text{band-ratio}}$ of $s(w^{*})$ on either side,
+%
+\begin{equation}
+\frac{1}{\tau_{\text{band-ratio}}}\, s(w^{*}) \;\le\; s(w) \;\le\;
+\tau_{\text{band-ratio}}\, s(w^{*}),
+\qquad \tau_{\text{band-ratio}} > 1.
+\end{equation}
+%
+The two variants correspond to the Prescreen and Hybrid families of
+\Cref{sec:method-gens}. Both bands are two-sided: they remove
+candidates that the oracle is confident about in either direction --
+whether obviously honeyword-looking, with a score far below
+$s(w^{*})$, or obviously real-looking, with a score far above it --
+since either kind stands out in the induced distribution. One practical
+adjustment is needed for the multiplicative band: when the oracle is
+undertrained it sometimes scores the real password very close to zero,
+which would shrink the band to almost nothing and reject every
+candidate. To avoid this, the band is built around
+$\max(s(w^{*}), 0.05)$ instead of $s(w^{*})$ directly, so that a
+near-zero real score does not collapse the band.
+
+\subsection{Set-Level Rejection Sampling}
+
+After $k-1$ candidates survive pre-screening, the sweetword set
+$S = \{w^{*}\} \cup \{w_1, \ldots, w_{k-1}\}$ is passed to the oracle,
+which produces the score vector $s = (s_1, \ldots, s_k)$ and, via
+\Cref{eq:q}, the induced distribution $q$. The set is accepted if all
+three of the following hold:
+%
+\begin{align}
+q_{\max} &\;\le\; \frac{1}{k} + \varepsilon_{\max}, \\
+F_{\text{ent}}  &\;\ge\; 1 - \delta_{H}, \\
+\Delta_{\text{top}} &\;\le\; \text{gap}_{\max}.
+\end{align}
+%
+If any condition fails, the entire set is discarded and a fresh one is
+generated. Regeneration continues until acceptance or until a
+regeneration cap $R_{\max}$ is reached, in which case the best set
+observed so far (measured by minimum $q_{\max}$) is retained.
+
+There is one design limitation of this test worth stating explicitly.
+The predicate caps only the largest entry $q_{\max}$; it imposes no
+lower bound on any entry. A set in which some honeyword receives an
+anomalously low $q$ can therefore still pass, even though the resulting
+distribution is not perfectly uniform. In practice this asymmetry does
+not affect ASR, because ASR responds to the top of the ranking rather
+than the tail; we return to the point in \Cref{ch:results}.
+
+\subsection{Algorithm}
+
+The combined procedure is stated in \Cref{alg:hff}. The pseudocode
+uses generic band operator $\text{band}(\cdot)$ that stands for either
+the additive or the ratio variant of the pre-screening rule.
+
+\begin{algorithm}[H]
+\caption{Hybrid Flatness Filtering}
+\label{alg:hff}
+\begin{algorithmic}[1]
+\Require real password $w^{*}$, generator $G$, oracle $A$,
+    thresholds $\tau_{\text{band}},\ \varepsilon_{\max},\
+    \delta_{H},\ \text{gap}_{\max}$, cap $R_{\max}$
+\Ensure sweetword set $S$
+\State $r \gets 0$;\ \ $S^{\text{best}} \gets \varnothing$;\ \ 
+    $q^{\text{best}} \gets +\infty$
+\While{$r < R_{\max}$}
+    \State $C \gets G.\textsc{Generate}(w^{*},\ N_{\text{over}})$
+    \Comment{oversampled candidate pool}
+    \State $C \gets \{\, w \in C : \textsc{Band}(s(w), s(w^{*})) \,\}$
+    \Comment{candidate pre-screening}
+    \If{$|C| < k - 1$}
+        \State $r \gets r + 1$;\ \textbf{continue}
+    \EndIf
+    \State $S \gets \{w^{*}\} \cup \textsc{TakeFirst}(C,\ k-1)$
+    \State compute $s_i = A(w_i)$ and $q_i$ via \Cref{eq:q}
+    \State compute $q_{\max}$, $F_{\text{ent}}$, and $\Delta_{\text{top}}$
+    \If{$q_{\max} \le 1/k + \varepsilon_{\max}$ \textbf{and}
+        $F_{\text{ent}} \ge 1 - \delta_{H}$ \textbf{and}
+        $\Delta_{\text{top}} \le \text{gap}_{\max}$}
+        \State \Return $S$
+    \EndIf
+    \If{$q_{\max} < q^{\text{best}}$}
+        \State $S^{\text{best}} \gets S$;\ 
+            $q^{\text{best}} \gets q_{\max}$
+    \EndIf
+    \State $r \gets r + 1$
+\EndWhile
+\State \Return $S^{\text{best}}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Complexity}
+
+Let $C_{\text{CNN}}$ denote the cost of one forward pass through the
+oracle and let $\mathbb{E}[R]$ denote the expected number of
+regeneration attempts per password. The expected cost of producing one
+accepted sweetword set is
+%
+\begin{equation}
+\mathcal{O}\!\left(\, \mathbb{E}[R] \cdot k \cdot C_{\text{CNN}} \,\right),
+\end{equation}
+%
+plus the cost of the generator itself. Since $C_{\text{CNN}}$
+dominates the arithmetic cost of any of the generators used here, the
+filter's total cost is close to $\mathbb{E}[R] \cdot k$ oracle forward
+passes per password. Batched scoring keeps this modest for
+$k = 20$ and the $R_{\max}$ values reported in
+\Cref{sec:method-protocol}, and filtering happens once at storage
+time rather than at every authentication.
+
+\section{Evaluation Protocol}
+\label{sec:method-coinflip}
+
+\subsection{Design}
+
+Each generator is trained once at a fixed training size
+$N_{\text{train}}$, and every evaluation set is produced by that single
+trained generator. $\mathrm{ASR}@t$ is then computed over a test set of
+sweetword sets, restricted to the sets the filter accepted
+(\Cref{sec:method-filter}). Because the generator is fixed for a given
+$N_{\text{train}}$, the reported figures compare methods on the same
+footing rather than conflating a change of generator with a change of
+measurement. We report results at three training sizes,
+$N_{\text{train}} \in \{2000,\,5000,\,10000\}$, evaluating each on a
+test set of $2000$ sweetword sets.
+
+\subsection{Rational Attacker Floor}
+
+The CNN attacker's raw $\mathrm{ASR}@t$ --- the success of following the
+CNN's $t$ highest-scored candidates --- can fall \emph{below} the
+random-guessing baseline $t/k$ on some sets. This is not a sign that the
+set is safe. It means the CNN's ranking is \emph{anti-informative}: it
+places the real password near the \emph{bottom} of the order, so
+following its top guesses does worse than chance. A rational attacker
+who observed this would not keep following the CNN; it would invert its
+strategy and guess the candidates the CNN scores \emph{lowest}, which
+then succeeds far more often than chance.
+
+We therefore report the success of a rational attacker that uses the CNN
+ranking in whichever direction helps, falling back on random guessing
+when neither direction is informative:
+%
+\begin{equation}
+\mathrm{ASR}_{\text{reported}}(t)
+    \;=\; \max\!\bigl(\, \mathrm{ASR}_{\text{CNN}}(t),\
+    \mathrm{ASR}_{\overline{\text{CNN}}}(t),\ t/k \,\bigr),
+\label{eq:rational}
+\end{equation}
+%
+where $\mathrm{ASR}_{\text{CNN}}(t)$ counts the sets whose real password
+is among the CNN's top $t$ candidates,
+$\mathrm{ASR}_{\overline{\text{CNN}}}(t)$ counts those whose real
+password is among the CNN's \emph{bottom} $t$ candidates (the inverted
+strategy), and $t/k$ is plain random guessing. A genuinely flat
+generator drives all three terms to $t/k$, so the reported value is
+$t/k$. A generator whose real password the CNN systematically ranks low
+--- notably the GAN of \Cref{sec:results-gan} --- is caught by the
+inverted term, which reports the high success such a set really allows
+instead of masking it at $t/k$. This is the value used in every ASR
+figure and table in \Cref{ch:results}.
+
+\section{Experimental Protocol and Parameters}
+\label{sec:method-protocol}
+
+\subsection{Locked Parameters}
+
+The following parameters are fixed for every experiment reported in
+\Cref{ch:results}. The flatness thresholds were set in two stages. An
+initial, strict configuration ($\varepsilon_{\max} = 0.02$,
+$\delta_{H} = 0.04$, $\text{gap}_{\max} = 0.01$) was chosen from the
+theoretical rationale in \Cref{sec:method-formalism} and preliminary
+runs on the training split. As reported in
+\Cref{sec:method-threshold-tradeoff}, this configuration drove the
+ratio-based filters to acceptance rates below $10\%$, at which point
+the filtered methods can no longer be meaningfully compared to the
+unfiltered baselines. We therefore adopted a relaxed configuration,
+listed below, that restores usable acceptance across all filters at
+every corpus size. None of the thresholds was tuned on the evaluation
+split; the revision was driven entirely by the acceptance-rate
+diagnostic on the training split.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Symbol} & \textbf{Value} & \textbf{Role} \\
+\midrule
+$k$                       & $20$    & Sweetword set size \\
+$\varepsilon_{\max}$      & $0.05$  & $\varepsilon$-flatness bound (see note below) \\
+$\delta_{H}$              & $0.10$  & Entropy slack, $F_{\text{ent}} \ge 1 - \delta_{H}$ \\
+$\text{gap}_{\max}$       & $0.05$  & Top-gap threshold \\
+$\tau_{\text{band}}$      & $0.15$  & Additive pre-screening band \\
+$\tau_{\text{band-ratio}}$& $2.0$   & Multiplicative pre-screening band \\
+$R_{\max}$                & $50$    & Regeneration cap \\
+$\text{BS\_CNN}$          & $256$   & CNN training batch size \\
+Epochs (oracle)           & $10$    & CNN oracle training epochs \\
+Epochs (attacker)         & $10$    & CNN attacker training epochs \\
+$\text{SEED}$             & $42$    & Base random seed \\
+Attacker seed offset      & $7777$  & Added to base seed for attacker \\
+Hybrid model seed offset  & $5000$  & Added to base seed for Hybrid-Model \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A single value of $\varepsilon_{\max} = 0.05$ is used throughout, both
+in the definition of $\varepsilon$-flatness (\Cref{eq:eps-flat}) and in
+the filter's acceptance predicate (\Cref{sec:method-filter}), which
+share the additive form $q_{\max} \le 1/k + \varepsilon_{\max}$.
+
+\subsection{Threshold Selection and the Accept-Rate / ASR Trade-off}
+\label{sec:method-threshold-tradeoff}
+
+The flatness thresholds control a trade-off between two quantities that
+a deployed countermeasure must satisfy simultaneously. A stricter gate
+produces flatter accepted sets, lowering $\mathrm{ASR}$, but rejects a
+larger share of passwords; each rejected password reaches the
+regeneration cap without an accepted set and is excluded from the
+reported $\mathrm{ASR}$, which is therefore conditional on acceptance.
+The accept rate measures how often the filter succeeds, and the
+$\mathrm{ASR}$ measures how flat the sets are when it does.
+
+Under the initial thresholds, the ratio-based filters accepted fewer
+than $10\%$ of candidate passwords at $N_{\text{train}} \in \{5000,
+10000\}$ (Set-Filter reached $1.2\%$ at $N_{\text{train}} = 5000$),
+which makes their $\mathrm{ASR}$ a statement about a small and
+self-selected minority of passwords rather than about the method as a
+deployed defense. The adopted thresholds raise every filter above
+$25\%$ acceptance at every corpus size (\Cref{ch:results}), at the cost
+of a modest increase in $\mathrm{ASR}$ on the accepted sets. This is a
+deliberate choice: a filter that protects a single-digit percentage of
+users is not a usable countermeasure regardless of how flat its
+accepted sets are, so acceptance is treated as a first-class
+deployability requirement rather than a secondary diagnostic.
+
+Consequently, methods are compared in two stages in \Cref{ch:results}.
+A method must first clear a usable acceptance threshold; only among the
+methods that do so is the flattest (lowest-$\mathrm{ASR}$) one preferred.
+Under this criterion the ratio-based filters are the recommended
+configurations, since they deliver the flattest sets among the methods
+that remain deployable, whereas the additive filters accept more
+passwords but sit closer to the unfiltered baseline in flatness.
+
+\subsection{Metrics and Statistical Treatment}
+
+For each generator and each $N$ we report $\mathrm{ASR}@1$,
+$\mathrm{ASR}@3$, and $\mathrm{ASR}@5$ using
+\Cref{eq:rational}, with $\mathrm{ASR}@5$ as the primary metric.
+Alongside each ASR value we report the mean and median of
+$F_{\text{rank}}$, $F_{\text{ent}}$, $q_{\text{real}}$, and
+$\Delta_{\text{top}}$ over the evaluation sets, together with the
+number of accepted sets for the filtered generators. Confidence
+intervals at small $N$ are wide, approximately $\pm 20$ percentage
+points at $N \le 500$, and we do not draw conclusions from small-$N$
+comparisons that fall inside this margin.
+
+\subsection{Robustness Check}
+
+The primary corpus for all experiments is RockYou, and the primary
+attacker is the HoneyGen-tuned CNN. Robustness is assessed by
+re-evaluating the accepted sets against two further attacker classes
+--- a mixed-corpus CNN trained on several decoy families and a
+frequency ranker --- as reported in \Cref{sec:results-freq}. Extending
+the benchmark to a second corpus such as \emph{darkc0de} is left as
+future work (\Cref{ch:conclusion}).

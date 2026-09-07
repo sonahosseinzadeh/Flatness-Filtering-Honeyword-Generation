@@ -1,0 +1,25 @@
+% ===== Adopted parameter values =====
+\begin{table}[t]
+  \centering
+  \begin{tabular}{llr}
+    \toprule
+    \textbf{Symbol} & \textbf{Meaning} & \textbf{Value} \\
+    \midrule
+    $k$ & Sweetword set size & 20 \\
+    $\varepsilon_{\max}$ & $\varepsilon$-flatness bound ($q_{\max}\le 1/k+\varepsilon_{\max}$) & 0.05 \\
+    $\delta_{H}$ & Entropy slack ($F_{\text{ent}}\ge 1-\delta_H$) & 0.10 \\
+    $\text{gap}_{\max}$ & Top-gap threshold & 0.05 \\
+    $\tau_{\text{band}}$ & Additive pre-screening band & 0.15 \\
+    $\tau_{\text{band-ratio}}$ & Multiplicative pre-screening band & 2.0 \\
+    $R_{\max}$ & Regeneration cap & 50 \\
+    BS\_CNN & CNN training batch size & 256 \\
+    Epochs (oracle / attacker) & CNN training epochs & 10 / 10 \\
+    Epochs (GAN final / quick) & GAN training epochs & 60 / 20 \\
+    Epochs (FastText final / quick) & FastText training epochs & 100 / 20 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Adopted parameter values for all experiments in \Cref{ch:results}.
+  The flatness thresholds are the relaxed configuration of
+  \Cref{sec:method-threshold-tradeoff}.}
+  \label{tab:params}
+\end{table}

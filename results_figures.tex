@@ -1,0 +1,14 @@
+% Mixed-corpus attacker figure (smaller, inline). The frequency-attacker
+% results are reported in Table (tab:crossatt), not as a figure.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.72\textwidth]{figures/asr_mixed_N2000.png}
+  \caption{ASR curves under the mixed-corpus attacker (trained on
+  Tweak + Password-Model + HoneyGen + GAN negatives) at
+  $N_{\text{train}} = 2000$, test on 2000 passwords. The GAN moves off
+  the random-guessing diagonal it hugged under the single-family CNN
+  attacker, and the effect strengthens with training size
+  (\Cref{sec:results-gan}).}
+  \label{fig:asr-mixed-2000}
+\end{figure}

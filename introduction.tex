@@ -1,0 +1,179 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+Password authentication remains the dominant credential mechanism for
+consumer web services, in spite of decades of proposals for alternatives.
+Its persistence is a consequence of deployability, familiarity, and a near-zero
+marginal cost. Its cost is a long history of database breaches that
+repeatedly expose hundreds of millions of hashed credentials to offline
+guessing attacks. Once a hash file has left the server, the guessing rate
+is bounded only by the attacker's compute, and any weakness in the
+underlying password distribution translates directly into recovered
+plaintexts.
+
+\textcite{juels2013honeywords} proposed \emph{honeywords} as a detection
+layer over this failure mode. For each account the authentication server
+stores a \emph{sweetword set} of $k$ candidate hashes, one of which is the
+real password and the other $k-1$ of which are decoys, together with a
+separate index held by a hardened \emph{HoneyChecker} that identifies
+which position is real. A successful login with a decoy is a signal that
+the hash file has been read offline and the attacker has begun trying
+candidates. The scheme does not prevent guessing; it converts silent
+database compromise into an event that the server can detect and act on.
+
+The security of the scheme rests on a property called
+\emph{flatness}: given the sweetword set, an attacker who has read the
+hash file must not be able to identify the real password with probability
+much better than $1/k$. Under perfect flatness, all $k$ candidates are
+indistinguishable to the attacker, and every login attempt against a decoy
+raises the alarm with the same probability. Flatness is what turns
+honeywords from a labeling exercise into a detection guarantee.
+
+\section{Motivation}
+
+Flatness, in most of the honeyword literature, is measured against
+attackers that no longer represent the state of the art. Traditional
+evaluations rank sweetwords using frequency counts, probabilistic
+context-free grammars, or Markov models, and honeywords are declared
+flat when the real password does not stand out under those rankers.
+\textcite{dani2024passfilter} showed that a modestly sized
+character-level convolutional neural network trained as a binary
+classifier defeats this notion on the honeyword schemes it was tested
+against, including the representation-learning generators of
+\textcite{dionysiou2021honeygen}. Under a learned discriminator, the
+attacker success rate is substantially higher than $1/k$, sometimes
+by an order of magnitude, and sweetwords that pass heuristic evaluation
+turn out to be individually plausible but collectively distinguishable.
+
+This gap has two consequences that motivate the rest of the thesis.
+First, the current honeyword generators have almost never been benchmarked
+against a neural attacker, so it is not known how badly they fail once
+one is admitted into the threat model. Second, no construction in the
+literature restores flatness against such an attacker without redesigning
+the generator itself, which would leave existing deployments unprotected.
+Both issues need to be resolved for honeyword-based breach detection
+to remain a credible defense.
+
+\section{Approach}
+
+We take the same discriminator that \textcite{dani2024passfilter}
+introduced as an attack tool and reuse it, unmodified in architecture,
+as a \emph{defensive oracle} during sweetword construction. A candidate
+sweetword set is produced by any of the standard mechanisms, scored by
+the oracle, and either accepted or discarded depending on whether the
+induced score distribution over the set satisfies a small collection of
+measurable flatness conditions. Sets that fail are regenerated up to a
+bounded budget. The classifier that would otherwise identify the real
+password thus becomes the gatekeeper that prevents any set with an
+identifiable real password from being stored.
+
+The construction is deliberately generator-agnostic. We apply it as a
+post-processing layer over ten honeyword generation methods, spanning
+rule-based tweaking, representation-learning approaches derived from
+\textcite{dionysiou2021honeygen}, and a self-trained GAN. Each method
+is trained once at a fixed training-set size and evaluated on a common
+test set of sweetword sets, so that comparisons across generators are
+made on the same footing. The primary evaluation uses a CNN attacker
+trained on HoneyGen; robustness is then checked against two
+further attacker classes -- a mixed-corpus CNN trained on several
+decoy families and a frequency ranker -- which together distinguish
+genuine flatness from single-attacker artifacts.
+
+The primary security metric is the attacker's success rate at guess
+budget five, $\mathrm{ASR}@5$: the fraction of accounts an attacker
+compromises when it is allowed five guesses among the $k = 20$
+sweetwords of an account. We report the full curve $\mathrm{ASR}@t$ for
+$t = 1, \dots, 20$, but summarise on $t = 5$ because it matches the
+honeyword threat model. After cracking a stolen hash file offline, an
+attacker still has to submit a recovered sweetword to the live service
+to use it; submitting a honeyword trips the honeychecker, and most
+online services additionally lock an account after a small number of
+failed attempts, with five a common threshold
+\parencite{dani2024passfilter}. $\mathrm{ASR}@5$ therefore measures what
+an attacker can achieve within one realistic lockout window. The
+extremes are less informative as a single headline: $\mathrm{ASR}@1$
+reflects only the single best guess, while $\mathrm{ASR}@{20}$ equals
+$1.0$ by construction once all $k = 20$ sweetwords have been tried. For
+a perfectly flat set the attacker does no better than random, giving
+$\mathrm{ASR}@5 = 5/20 = 0.25$.
+
+\section{Contributions}
+
+The thesis makes the following contributions.
+
+\begin{enumerate}
+
+    \item \textbf{Attacker-relative set-level flatness.}
+    We define flatness as a property of the probability distribution
+    that a learned attacker induces over a sweetword set, and we
+    characterize it by four quantities computed from that distribution:
+    rank-based flatness, normalized entropy, top and real gaps, and an
+    $\varepsilon$-flatness bound on the largest renormalized score in
+    the set. These replace the frequency-based flatness notions that
+    dominate the earlier literature and make the property operational
+    under any binary discriminator.
+
+    \item \textbf{Hybrid flatness filtering.}
+    We propose a two-stage rejection-sampling algorithm that combines
+    candidate-level pre-screening with set-level acceptance.
+    Pre-screening removes individually distinguishable decoys before a
+    set is assembled; set-level acceptance discards sets whose induced
+    distribution violates any of the flatness conditions. The algorithm
+    operates as a post-processing layer and does not require modifying
+    the underlying generator or retraining the attacker.
+
+    \item \textbf{Benchmark of ten honeyword generators against a neural
+    attacker.} We evaluate Chaffing-by-Tweaking, Chaffing-with-Password-Model,
+    Chaffing-with-Hybrid-Model, HoneyGen Baseline, HoneyGen Set-Filter,
+    HoneyGen Prescreen-Add, HoneyGen Prescreen-Ratio, HoneyGen Hybrid-Add,
+    HoneyGen Hybrid-Ratio, and a self-trained GAN, on the RockYou corpus
+    with $k=20$. Reporting the same attacker success rate under a common
+    experimental protocol lets us separate genuine flatness gains from
+    distributional artifacts of the generator, an effect that turns out
+    to matter for the GAN and that we discuss in \Cref{ch:results}.
+
+    \item \textbf{A defensive reinterpretation of the neural-attacker
+    paradigm.} The thesis shows that a discriminator of the type used
+    by \textcite{dani2024passfilter} as an attack can be repurposed,
+    without architectural change, into the enforcement mechanism of a
+    flatness guarantee. What defeats current honeyword schemes at test
+    time becomes what protects them at storage time.
+
+\end{enumerate}
+
+\section{Scope and Assumptions}
+
+The guarantees this thesis provides are model-relative. Filtering is
+performed against one specific attacker, the character-level CNN
+described in \Cref{ch:method}, and the flatness conditions constrain
+that attacker's induced distribution over the sweetword set.
+A different attacker, with a different architecture or with access to
+side information beyond the sweetword strings, may recover
+distinguishability. \Cref{ch:conclusion} returns to this point when
+discussing the limits of the framework.
+
+The evaluation is restricted to leaked passwords from the RockYou
+corpus and to sweetword sets of size $k=20$. Only the password string
+itself is used as input by the generators and the attackers.
+\Cref{ch:results} reports how far the conclusions carry over across
+attacker classes, from the HoneyGen-tuned CNN to a mixed-corpus CNN
+and a frequency ranker; extending the benchmark to a second corpus
+such as \emph{darkc0de} is left as future work
+(\Cref{ch:conclusion}).
+
+The remainder of the thesis proceeds as follows. \Cref{ch:background}
+sets out the honeyword primitive, the HoneyChecker architecture, and
+the character-level convolutional networks that both the attack and the
+defense rely on. \Cref{ch:related} reviews the honeyword generators
+we benchmark against and situates \textcite{dani2024passfilter} within
+the wider line of neural password modeling. \Cref{ch:method} develops
+the flatness formalism, the CNN training procedure, the ten generators,
+the two-stage filtering algorithm, and the evaluation protocol.
+\Cref{ch:results} reports the ASR curves across
+the ten generators, isolates the effect of filtering on both security
+and the flatness criteria, weighs it against the acceptance rate as a
+deployability requirement, checks robustness across attacker classes,
+and discusses a distributional artifact in the GAN results that limits
+how far its low ASR should be trusted. \Cref{ch:conclusion} draws the
+argument together and lists the open questions the framework leaves
+behind.

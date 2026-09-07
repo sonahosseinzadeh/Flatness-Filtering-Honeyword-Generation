@@ -1,0 +1,27 @@
+% ===== CNN vs Mixed attacker (N_train=2000, matches slide 15) =====
+\begin{table}[t]
+  \centering
+  \begin{tabular}{lrr}
+    \toprule
+    \textbf{Method} & CNN-only $\mathrm{ASR}@5$ & Mixed-corpus $\mathrm{ASR}@5$ \\
+    \midrule
+    Chaffing-by-Tweaking & 0.679 & 0.860 \\
+    Chaffing-with-Password-Model & 0.759 & 0.725 \\
+    Chaffing-with-Hybrid-Model & 0.756 & 0.802 \\
+    HoneyGen Baseline & 0.752 & 0.799 \\
+    HoneyGen + Set-Filter & 0.728 & 0.779 \\
+    HoneyGen + Prescreen-Add & 0.588 & 0.538 \\
+    HoneyGen + Prescreen-Ratio & 0.417 & 0.392 \\
+    HoneyGen + Hybrid-Add & 0.641 & 0.707 \\
+    HoneyGen + Hybrid-Ratio & 0.503 & 0.599 \\
+    GAN (Self-Trained) & 0.212 & 0.336 \\
+    \bottomrule
+  \end{tabular}
+  \caption{$\mathrm{ASR}@5$ under the HoneyGen-only CNN attacker versus the
+  mixed-corpus attacker (Tweak + Password-Model + HoneyGen + GAN negatives)
+  at $N_{\text{train}}=2000$. The GAN moves off the near-floor value it
+  reported under the CNN-only attacker ($0.21 \to 0.34$), while the
+  filtered ratio methods shift comparatively little; the effect is much
+  larger at $N_{\text{train}}=5000$ (\Cref{sec:results-gan}).}
+  \label{tab:mixed}
+\end{table}

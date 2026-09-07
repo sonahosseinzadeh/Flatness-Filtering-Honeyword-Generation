@@ -1,0 +1,25 @@
+% CNN ASR curves at N_train=10000, one panel per test size, enlarged.
+\begin{figure}[p]
+  \centering
+  \begin{subfigure}{0.66\textwidth}
+    \includegraphics[width=\linewidth]{figures/cmp_N10000_e500.png}
+    \caption{Test on 500 sets.}
+  \end{subfigure}
+
+  \medskip
+  \begin{subfigure}{0.66\textwidth}
+    \includegraphics[width=\linewidth]{figures/cmp_N10000_e1000.png}
+    \caption{Test on 1000 sets.}
+  \end{subfigure}
+
+  \medskip
+  \begin{subfigure}{0.66\textwidth}
+    \includegraphics[width=\linewidth]{figures/cmp_N10000_e2000.png}
+    \caption{Test on 2000 sets.}
+  \end{subfigure}
+  \caption{ASR curves under the CNN attacker at $N_{\text{train}} = 10000$
+  for all ten methods, evaluated on test sets of 500, 1000, and 2000
+  sweetword sets. The three panels keep the same shape and the same
+  ordering of methods as the test set grows.}
+  \label{fig:cmp-all}
+\end{figure}

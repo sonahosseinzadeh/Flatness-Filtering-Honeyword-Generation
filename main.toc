@@ -1,0 +1,96 @@
+\contentsline {chapter}{Chapter\ \numberline {1}Introduction}{8}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Motivation}{9}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Approach}{9}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Contributions}{10}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Scope and Assumptions}{11}{section.1.4}%
+\contentsline {chapter}{Chapter\ \numberline {2}Background}{12}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Password Guessing After a Breach}{12}{section.2.1}%
+\contentsline {section}{\numberline {2.2}The Honeyword Primitive}{13}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Sweetword Storage}{13}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}The HoneyChecker}{13}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Alarms and Response}{14}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Classical Flatness}{14}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}The Attacker's Task}{14}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}$1/k$-Flatness and $\varepsilon $-Flatness}{15}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Related Security Properties}{15}{subsection.2.3.3}%
+\contentsline {section}{\numberline {2.4}Character-Level Convolutional Classifiers}{15}{section.2.4}%
+\contentsline {section}{\numberline {2.5}FastText Password Embeddings}{16}{section.2.5}%
+\contentsline {chapter}{Chapter\ \numberline {3}Related Work}{18}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Heuristic Honeyword Generators}{18}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Representation-Learning Approaches: HoneyGen}{19}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Large-Language-Model Approaches}{20}{section.3.3}%
+\contentsline {section}{\numberline {3.4}GAN-Based Honeyword Generators}{20}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Neural Distinguishers as Attackers: PassFilter}{21}{section.3.5}%
+\contentsline {section}{\numberline {3.6}The HBAT Survey}{22}{section.3.6}%
+\contentsline {section}{\numberline {3.7}Position of This Thesis}{22}{section.3.7}%
+\contentsline {chapter}{Chapter\ \numberline {4}Methodology}{24}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Overview}{24}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Attacker-Relative Set-Level Flatness}{25}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Sweetword Set and Attacker Model}{25}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Set-Level Induced Distribution}{25}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Flatness Metrics}{25}{subsection.4.2.3}%
+\contentsline {paragraph}{Rank-based flatness.}{26}{section*.2}%
+\contentsline {paragraph}{Normalized entropy.}{26}{section*.3}%
+\contentsline {paragraph}{Gap metrics.}{26}{section*.4}%
+\contentsline {paragraph}{$\varepsilon $-flatness.}{26}{section*.5}%
+\contentsline {paragraph}{Attacker success rate.}{27}{section*.6}%
+\contentsline {subsection}{\numberline {4.2.4}Operational Definition of Flatness}{27}{subsection.4.2.4}%
+\contentsline {section}{\numberline {4.3}Corpora and Splits}{27}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Sources}{27}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Disjoint Oracle and Attacker Corpora}{27}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Set-Level Splits}{28}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}The CNN Discriminator}{28}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Architecture}{28}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Training}{28}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}Dual Role and Seed Separation}{29}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4.4}Robustness Attackers}{29}{subsection.4.4.4}%
+\contentsline {paragraph}{Frequency ranker.}{29}{section*.7}%
+\contentsline {paragraph}{Mixed-corpus CNN.}{30}{section*.8}%
+\contentsline {section}{\numberline {4.5}Honeyword Generation Methods}{30}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Chaffing Family}{30}{subsection.4.5.1}%
+\contentsline {paragraph}{Chaffing-by-Tweaking.}{30}{section*.9}%
+\contentsline {paragraph}{Chaffing-with-Password-Model.}{30}{section*.10}%
+\contentsline {paragraph}{Chaffing-with-Hybrid-Model.}{30}{section*.11}%
+\contentsline {subsection}{\numberline {4.5.2}HoneyGen Family}{31}{subsection.4.5.2}%
+\contentsline {paragraph}{HoneyGen Baseline.}{31}{section*.12}%
+\contentsline {paragraph}{HoneyGen Set-Filter.}{31}{section*.13}%
+\contentsline {paragraph}{HoneyGen Prescreen-Add and Prescreen-Ratio.}{31}{section*.14}%
+\contentsline {paragraph}{HoneyGen Hybrid-Add and Hybrid-Ratio.}{31}{section*.15}%
+\contentsline {subsection}{\numberline {4.5.3}GAN}{31}{subsection.4.5.3}%
+\contentsline {section}{\numberline {4.6}Hybrid Flatness-Filtering Algorithm}{32}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Candidate-Level Pre-Screening}{32}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Set-Level Rejection Sampling}{32}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}Algorithm}{33}{subsection.4.6.3}%
+\contentsline {subsection}{\numberline {4.6.4}Complexity}{34}{subsection.4.6.4}%
+\contentsline {section}{\numberline {4.7}Evaluation Protocol}{34}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Design}{34}{subsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7.2}Rational Attacker Floor}{34}{subsection.4.7.2}%
+\contentsline {section}{\numberline {4.8}Experimental Protocol and Parameters}{35}{section.4.8}%
+\contentsline {subsection}{\numberline {4.8.1}Locked Parameters}{35}{subsection.4.8.1}%
+\contentsline {subsection}{\numberline {4.8.2}Threshold Selection and the Accept-Rate / ASR Trade-off}{36}{subsection.4.8.2}%
+\contentsline {subsection}{\numberline {4.8.3}Metrics and Statistical Treatment}{36}{subsection.4.8.3}%
+\contentsline {subsection}{\numberline {4.8.4}Robustness Check}{37}{subsection.4.8.4}%
+\contentsline {chapter}{Chapter\ \numberline {5}Results}{38}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Setup}{38}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Unfiltered Baselines Under the CNN Attacker}{39}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Effect of Flatness Filtering}{40}{section.5.3}%
+\contentsline {paragraph}{Unfiltered baselines.}{40}{section*.18}%
+\contentsline {paragraph}{Additive filters.}{40}{section*.19}%
+\contentsline {paragraph}{Ratio filters.}{41}{section*.20}%
+\contentsline {section}{\numberline {5.4}Cost of Filtering and the Deployability Gate}{41}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Stability Across Training-Set Size}{43}{section.5.5}%
+\contentsline {section}{\numberline {5.6}ASR Curves and Consistency Across Test-Set Size}{43}{section.5.6}%
+\contentsline {section}{\numberline {5.7}The GAN Result Requires a Caveat}{43}{section.5.7}%
+\contentsline {section}{\numberline {5.8}Robustness Across Attacker Class}{47}{section.5.8}%
+\contentsline {section}{\numberline {5.9}Discussion}{48}{section.5.9}%
+\contentsline {chapter}{Chapter\ \numberline {6}Conclusion}{49}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of Contributions}{50}{section.6.1}%
+\contentsline {section}{\numberline {6.2}What the Numbers Actually Say}{50}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Limitations}{51}{section.6.3}%
+\contentsline {paragraph}{Coverage below 100\%.}{51}{section*.28}%
+\contentsline {paragraph}{Model-relative guarantees.}{51}{section*.29}%
+\contentsline {paragraph}{One-sided set-level acceptance.}{51}{section*.30}%
+\contentsline {paragraph}{Acceptance-rate cost of the ratio filter.}{52}{section*.31}%
+\contentsline {paragraph}{Corpus and language.}{52}{section*.32}%
+\contentsline {section}{\numberline {6.4}Open Questions}{52}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Closing}{53}{section.6.5}%

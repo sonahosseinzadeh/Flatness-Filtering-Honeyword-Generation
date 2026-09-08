@@ -49,4 +49,4 @@ The RockYou corpus, the trained oracle/attacker CNN weights, and any raw passwor
 
 ## Note on AI assistance
 
-Parts of this thesis were drafted and revised with the help of Claude (Anthropic), including LaTeX formatting, table and figure generation from experimental data, and wording passes made in response to advisor feedback. All technical content, experimental design, and conclusions were reviewed by the author, who takes full responsibility for them.
+Parts of this thesis were drafted and revised with the help of AI, including LaTeX formatting and wording . All technical content, experimental design, and conclusions were reviewed by the author, who takes full responsibility for them.

@@ -1,158 +1,52 @@
-# Flatness-Filtering-Honeyword-Generation
-MSc Computer Engineering thesis on flatness filtering for honeyword generation using CNN
-University of Genoa
+# Flatness Filtering for Honeyword Generation
+
+Master's thesis, Computer Engineering, DIBRIS, University of Genoa.
+
+- **Author:** Sona Hosseinzadeh Mahdavi
+- **Advisor:** Alessandro Armando
+- **Examiner:** Matteo Dell'Amico
+
+## What this is
+
+Honeyword schemes protect password databases by storing decoy passwords next to the real one, so a stolen hash file can't be used without risking detection. That only works if the decoys are flat — if the real password can't be picked out of the set. PassFilter (Dani et al., 2024) showed that a CNN classifier can pick it out anyway, breaking flatness for most existing generators.
+
+This thesis turns that same classifier around and uses it as a filter: score every candidate sweetword set, reject the ones where the real password stands out, regenerate until one passes or a retry cap is hit. Ten generators are benchmarked this way — rule-based chaffing, HoneyGen variants, and a self-trained GAN — at training sizes of 2000, 5000, and 10000, against three attackers (a HoneyGen-tuned CNN, a mixed-corpus CNN, and a frequency ranker).
+
+The headline result: unfiltered generators get broken easily (ASR@5 around 0.68–0.76), ratio-based filtering brings that down to 0.29–0.34 while staying deployable, and the GAN is a cautionary tale — it looks flat under a naive attacker, but the real password sits at the bottom of the ranking, so a rational attacker inverts and recovers it almost every time.
+
+## Repository layout
+main.tex — master document (title, author, includes chapters)
+preamble.tex — packages and formatting
+introduction.tex — motivation, contributions, roadmap
+background.tex — honeywords, HoneyChecker, CNN/FastText background
+related.tex — prior generators, PassFilter, PassGAN
+method.tex — flatness formalism, CNN, generators, filtering algorithm
+results.tex — experiments, tables, figures, discussion
+conclusion.tex — contributions, limitations, open questions
+tables/ — result tables (params, ASR, accept rate, GAN, cross-attacker, mixed)
+results_figures.tex — mixed/frequency attacker figures
+results_comparison.tex — CNN ASR curves at N_train=10000
+figures/ — the plot images
+bib.bib — bibliography
+masterthesis_ceng.cls — DIBRIS Computer Engineering thesis class
 
 
-**Author:** Sona Hosseinzadeh Mahdavi  
-**Advisor:** Alessandro Armando  
-**Examiner:** Matteo Dell’Amico  
-**Year:** 2026
+## Building it
 
-## Overview
+Requires a TeX distribution (MiKTeX or TeX Live) with pdflatex and biber — this project uses biblatex, not the older bibtex.
 
-This repository contains the research materials, experimental
-code, results, diagrams, and thesis drafts for the MSc thesis:
-
-**Flatness Filtering for Honeyword Generation**
-
-The thesis investigates whether a neural discriminator can be
-reused as a defensive oracle to improve the flatness of honeyword
-sets against learned attackers.
-
-The proposed approach applies a hybrid flatness-filtering procedure
-during honeyword construction. Candidate honeywords are first
-screened individually and then evaluated at the sweetword-set level.
-Sets that fail the defined flatness conditions are rejected and
-regenerated.
+pdflatex -interaction=nonstopmode main.tex
+biber main
+pdflatex -interaction=nonstopmode main.tex
+pdflatex -interaction=nonstopmode main.tex
 
 
-## Research Objective
+If `latexmk` and Perl are installed, `latexmk -pdf main.tex` runs all four steps in one command. The first build will pause a few times while MiKTeX fetches missing packages (`pgfplots`, `biblatex`, `algorithm`) — approve the installs when prompted.
 
-The main objective is to investigate whether existing honeyword
-generation techniques can be improved against neural attackers
-without modifying the underlying generators.
+## What's not in here
 
-The study evaluates multiple honeyword generation methods against
-character-level CNN attackers and compares their attacker success
-rates with the random-guessing baseline.
+The RockYou corpus, the trained oracle/attacker CNN weights, and any raw password files are excluded on purpose. They contain leaked-credential data and don't belong in a public repository.
 
+## Note on AI assistance
 
-## Main Components
-
-The project contains:
-
-- Honeyword generation methods
-- Character-level CNN discriminator
-- Defensive flatness oracle
-- Candidate-level pre-screening
-- Set-level rejection sampling
-- Flatness metrics
-- Attacker evaluation
-- Robustness evaluation
-- Experimental results
-- Thesis drafts and final thesis
-
-## Honeyword Generators
-
-The benchmark includes ten generation methods:
-
-1. Chaffing-by-Tweaking
-2. Chaffing-with-Password-Model
-3. Chaffing-with-Hybrid-Model
-4. HoneyGen Baseline
-5. HoneyGen Set-Filter
-6. HoneyGen Prescreen-Add
-7. HoneyGen Prescreen-Ratio
-8. HoneyGen Hybrid-Add
-9. HoneyGen Hybrid-Ratio
-10. Self-trained GAN
-
-
-## Filtering Approach
-
-The proposed filtering procedure contains two stages.
-
-### 1. Candidate-Level Pre-Screening
-
-Candidate honeywords are compared with the real password using
-the defensive CNN oracle.
-
-Two variants are evaluated:
-
-- Additive score band
-- Multiplicative score band
-
-### 2. Set-Level Rejection Sampling
-
-A complete sweetword set is evaluated using the oracle.
-
-A set is accepted only when it satisfies the defined flatness
-conditions.
-
-Otherwise, the set is discarded and regenerated until acceptance
-or until the regeneration limit is reached.
-
-
-## Evaluation
-
-The primary security metric is:
-
-**ASR@t (Attacker Success Rate at guess budget t)**
-
-For a sweetword set containing `k = 20` candidates, the random
-guessing baseline is:
-
-`ASR@t = t / k`
-
-The experiments report attacker success at multiple guess budgets,
-including ASR@1, ASR@3, and ASR@5.
-
-The primary evaluation uses a CNN attacker, with additional
-robustness evaluation using:
-
-- Mixed-corpus CNN
-- Frequency-based ranker
-
-
-## Experimental Setup
-
-The experiments use the cleaned RockYou password corpus.
-
-Training-set sizes:
-
-- 2,000
-- 5,000
-- 10,000
-
-Sweetword set size:
-
-- `k = 20`
-
-The oracle and attacker use disjoint corpora.
-
-The attacker is trained independently and is not used during
-the filtering stage.
-
-
-## Repository Structure
-
-```text
-.
-├── thesis/
-│   ├── drafts/
-│   └── final/
-│
-├── src/
-│   ├── generators/
-│   ├── filtering/
-│   ├── models/
-│   ├── evaluation/
-│   └── utils/
-│
-├── experiments/
-├── results/
-├── diagrams/
-├── data/
-├── references/
-└── docs/
-```
+Parts of this thesis were drafted and revised with the help of Claude (Anthropic), including LaTeX formatting, table and figure generation from experimental data, and wording passes made in response to advisor feedback. All technical content, experimental design, and conclusions were reviewed by the author, who takes full responsibility for them.

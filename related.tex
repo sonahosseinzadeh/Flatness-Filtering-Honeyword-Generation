@@ -1,0 +1,287 @@
+\chapter{Related Work}
+\label{ch:related}
+
+The literature on honeyword-based authentication has two threads. The
+first is the design of \emph{generators} that produce honeywords
+intended to be difficult to distinguish from real passwords. The
+second, more recent, is the design of \emph{distinguishers} that
+attempt to break flatness under stronger attacker models than the ones
+generators are usually evaluated against. Both threads inform this
+thesis: the ten generators of \Cref{sec:method-gens} are drawn from
+the first thread, and the CNN of \Cref{sec:method-cnn} is drawn from
+the second. This chapter reviews both, and \Cref{sec:related-position}
+describes how the filtering construction of \Cref{sec:method-filter}
+sits between them.
+
+\section{Heuristic Honeyword Generators}
+\label{sec:related-heuristic}
+
+The earliest honeyword generators are the four \emph{chaffing}
+constructions proposed alongside the primitive by
+\textcite{juels2013honeywords}: \emph{chaffing-by-tweaking},
+\emph{chaffing-by-tail-tweaking}, \emph{chaffing-with-a-password-model},
+and \emph{chaffing-with-tough-nuts}. Chaffing-by-tweaking applies
+character-class substitutions to the real password to produce visually
+similar decoys; chaffing-by-tail-tweaking restricts the edits to a
+short suffix. Chaffing-with-a-password-model draws candidates from an
+external password model such as a PCFG or a Markov chain, so that the
+decoys look like plausible passwords in the aggregate rather than like
+edits of the real one. Chaffing-with-tough-nuts inserts random,
+high-entropy strings that no attacker would submit at login and that
+therefore serve as guaranteed alarms.
+
+These constructions were evaluated against attackers that scored
+candidates independently, typically PCFG-based rankers of the kind
+introduced by \textcite{weir2009pcfg} and Markov rankers of the kind
+introduced by \textcite{narayanan2005fast}. The flatness numbers
+reported under this evaluation model are close to $1/k$ for
+carefully-tuned chaffing schemes, which motivated the follow-up
+literature. Two of these constructions, chaffing-by-tweaking and
+chaffing-with-a-password-model, appear in our benchmark
+(\Cref{sec:method-gens}) as reference points against the more
+sophisticated generators discussed below, together with a hybrid
+chaffing method that mixes the two and that we introduce for
+comparison.
+
+The main line of criticism against the heuristic generators is
+\emph{per-password plausibility}: the decoys are designed so that each
+one looks like a plausible password in isolation, but there is no
+constraint on how they look \emph{as a set}. A generator can produce
+$k-1$ plausible but distributionally-clustered decoys that leave the
+real password stranded, and the attacker only needs to notice the
+cluster to identify the outlier. This is the phenomenon that later
+generators, and the filter of \Cref{sec:method-filter}, are designed
+to address.
+
+\section{Representation-Learning Approaches: HoneyGen}
+\label{sec:related-honeygen}
+
+\textcite{dionysiou2021honeygen} propose \emph{HoneyGen}, a generator
+that combines a FastText password model with rule-based tweaking. The
+password model produces nearest-neighbor candidates for the real
+password in the FastText embedding space (\Cref{sec:bg-fasttext}), and
+a tweaking module produces additional candidates by character-class
+substitution. The two streams are merged, pruned using a
+frequency-based filter that removes overly common candidates, and the
+top $k-1$ are retained as honeywords.
+
+The evaluation in the original paper is against frequency-based and
+PCFG-based attackers, and HoneyGen achieves flatness scores that
+improve on the chaffing baselines. Under this class of attacker the
+paper's conclusion is uncontroversial: representation learning
+captures more of the password distribution than either rules or PCFGs
+alone, and the resulting decoys are harder to distinguish under a
+ranker of the kind those attackers rely on.
+
+Our position with respect to HoneyGen is precise. We reuse the
+generator, without modification, as the source of candidates for six
+of the ten methods in the benchmark (HoneyGen Baseline, Set-Filter,
+Prescreen-Add, Prescreen-Ratio, Hybrid-Add, Hybrid-Ratio). What we do
+not reuse is the paper's evaluation: our attacker is the CNN of
+\Cref{sec:bg-cnn} rather than a frequency ranker, and the flatness
+scores we report under that attacker are substantially worse than the
+ones the original paper reports (\Cref{ch:results}). The four filtered
+variants are the mechanism by which we recover flatness against this
+stronger attacker without modifying the generator itself.
+
+\section{Large-Language-Model Approaches}
+\label{sec:related-llm}
+
+More recent work uses large language models as the source of
+honeyword candidates. The chunk-level construction of
+\textcite{yu2023honeychunk} has drawn particular attention: a password
+is disassembled into semantic chunks that a pre-trained language model
+perturbs one at a time, and candidate sets are drawn with
+Metropolis--Hastings sampling -- an accept-or-reject sampling scheme
+that steers the generated candidates toward regions the model assigns a
+high real-password probability -- while locality-sensitive hashing, a
+technique that maps similar strings to the same bucket, is used to drop
+near-duplicates from the pool. These are among the most linguistically
+sophisticated generators the honeyword literature has produced, and
+they report clear gains in semantic plausibility over both HoneyGen and
+GAN-based methods.
+
+The evaluation in this line, however, follows the same statistical
+plausibility paradigm as the earlier work. Flatness is measured
+against ranker-style attackers, and the metrics reported are
+distributional distances rather than the success rate of a neural
+distinguisher trained specifically to identify the real password. The
+gap this leaves is exactly the one \textcite{dani2024passfilter}
+demonstrated for HoneyGen: a generator can be indistinguishable under
+one attacker class and yet break under a stronger one. We do not
+evaluate an LLM-based generator directly in this thesis, since our
+focus is on the reuse of the neural distinguisher as a defensive
+oracle rather than on the generation side. The construction of
+\Cref{sec:method-filter} is agnostic to the source of candidates and
+would apply to an LLM-based generator without modification;
+\Cref{ch:conclusion} returns to this point.
+
+\section{GAN-Based Honeyword Generators}
+\label{sec:related-gan}
+
+\textcite{hitaj2019passgan} adapt the generative adversarial network
+of \textcite{goodfellow2014generative} to password modeling, in the
+attack setting: the goal is to produce guess sequences that recover
+more of a leaked corpus than PCFG or Markov models produce at the same
+budget. The adaptation is to train the generator against a
+discriminator that tries to separate generated strings from real
+leaked ones, with both networks operating on character sequences.
+
+GANs have already been studied as a source of honeyword candidates.
+\textcite{fauzi2020passgan} analyse a game in which the
+defender uses the generator of a PassGAN model to produce honeywords
+while the attacker uses its discriminator to pick out the real
+password, and assess the feasibility of PassGAN as a honeyword
+generation strategy. We include a GAN in this same spirit as one of the
+generators in our benchmark: the intuition is that a model that has
+learned the password distribution should, in principle, produce decoys
+that look like real passwords. Our GAN is a character-level generator
+trained from scratch on the same corpus as the other generators (a
+\emph{self-trained} GAN), and we sample decoys from it directly.
+GANs are prone to \emph{mode collapse}, where the
+generator learns to emit only a narrow set of outputs instead of
+covering the full variety of the training distribution; for passwords
+this shows up as the same few common strings being produced over and
+over. To obtain enough distinct decoys despite this, we oversample the
+generator -- drawing roughly five times as many candidates as a set
+needs -- and deduplicate the resulting pool before assembling each
+sweetword set. This GAN is one of the ten generators evaluated in our
+benchmark (\Cref{ch:method}).
+
+The theoretical case for using a GAN as a honeyword generator is
+subtle, and our results show it does not hold in practice. A generator
+that had truly converged to the real password distribution would
+produce indistinguishable decoys almost by definition, but real
+password distributions have long low-probability tails that GANs are
+known to underrepresent, so the resulting decoys cluster in the
+high-probability region and the real password, often itself a
+low-probability string, is left looking anomalous. In
+\Cref{ch:results} we show exactly this: under the CNN attacker the
+GAN's real password is pushed to the bottom of the ranking
+($F_{\text{rank}} \approx 0.92$), so its apparently low attack success
+is an artifact of that inversion rather than genuine flatness, and a
+mixed-corpus attacker exposes it. This is why the GAN's flatness
+numbers must be read with care rather than taken at face value.
+
+\section{Neural Distinguishers as Attackers: PassFilter}
+\label{sec:related-passfilter}
+
+The line of work most directly relevant to this thesis is PassFilter
+\parencite{dani2024passfilter}. It trains a character-level
+convolutional neural network as a binary classifier that predicts,
+given a candidate password, whether it is real or a honeyword. The
+network is small by modern standards (two convolutional layers over
+character embeddings, followed by a fully connected layer), and it is
+trained on labeled pairs of real passwords and honeywords produced by
+existing generators.
+
+The main result of the paper is that this classifier violates flatness
+on every honeyword scheme they test, including HoneyGen and its
+variants, on multiple leaked corpora. The attacker success rate is
+substantially higher than $1/k$ across the board, sometimes by an
+order of magnitude, and the ranking induced by the classifier
+concentrates on the real password with a probability the classical
+flatness definition explicitly forbids.
+
+Using a learned discriminator as the attacker is not unique to
+PassFilter. As noted in \Cref{sec:related-gan},
+\textcite{fauzi2020passgan} already turn the discriminator of
+a PassGAN model against its own generator's honeywords; PassFilter can
+be read as the general form of the same idea, a classifier trained to
+separate real passwords from honeywords regardless of which generator
+produced them. Both establish the neural distinguisher as the attacker
+class that honeyword schemes must withstand. This thesis takes that
+distinguisher and moves it to the defensive side.
+
+Our reading of the PassFilter result is that the honeyword literature
+has been evaluating flatness against too weak an attacker class. The
+constructive response we develop is to admit the same class of
+classifier into the threat model, formalize flatness against it
+(\Cref{sec:method-formalism}), and then reuse the classifier itself,
+without architectural change, as the enforcement mechanism during
+sweetword construction (\Cref{sec:method-filter}). The name we give to
+this reuse, \emph{defensive oracle}, is meant to underline that the
+same object is used offensively in PassFilter and defensively in this
+thesis; only the surrounding pipeline changes.
+
+Two aspects of the PassFilter setup differ from ours in ways that
+matter. First, the paper releases model weights that are trained on a
+specific corpus and are used to attack sweetwords produced by
+generators trained on the same corpus. We do not reuse those weights;
+we train our own CNN on a disjoint attacker corpus
+(\Cref{sec:method-corpora}), which raises the baseline attacker
+success rate but removes any shared-parameter bias between attacker
+and generator. Second, the paper evaluates flatness at the level of
+individual sets. We report the full ASR curve $\mathrm{ASR}(t)$ over the
+guess budget $t$, computed over the accepted sets, for every generator
+under a common attacker.
+
+\section{The HBAT Survey}
+\label{sec:related-survey}
+
+\textcite{chakraborty2022hbat} survey the honeyword literature and
+propose a framework, \emph{honeyword-based authentication techniques}
+(HBAT), that organizes the existing schemes along three axes:
+generation method, distributed security model, and evaluation
+metric. Their treatment of flatness is compatible with, and indeed
+formalizes, the definition given by \textcite{juels2013honeywords};
+they extend it to $\varepsilon$-flatness and connect it to two further
+security notions (DoS resistance and MSV resistance) that we mentioned
+in \Cref{sec:bg-flatness}.
+
+The survey's attacker taxonomy runs from frequency-based rankers
+through PCFG and Markov models to neural language models. Neural
+\emph{distinguishers} of the kind introduced by
+\textcite{dani2024passfilter} appear implicitly in the survey's
+discussion of adversarial machine learning but are not integrated into
+the flatness definition itself. The refinement of the flatness
+definition in \Cref{sec:method-formalism} can be read as such an
+integration.
+
+\section{Position of This Thesis}
+\label{sec:related-position}
+
+The construction developed in this thesis sits at the intersection of
+the two threads reviewed above. From the generator thread, it inherits
+the ten methods of \Cref{sec:method-gens} without modification. From
+the distinguisher thread, it inherits the CNN classifier of
+\textcite{dani2024passfilter}, again without architectural change.
+What is new is the pipeline in which the two are combined: the
+classifier is trained on a disjoint corpus and reused as the oracle
+that decides which sweetword sets are stored, and the flatness
+conditions the oracle enforces are stated at the level of the set-wide
+induced distribution defined in \Cref{sec:method-formalism} rather
+than at the level of individual candidates.
+
+Three summary observations situate the contribution.
+%
+\begin{enumerate}
+    \item Prior generators are evaluated against attackers that they
+    themselves inspired. Frequency-based generators are evaluated
+    against frequency rankers, and representation-learning generators
+    are evaluated against Markov or PCFG rankers. This thesis holds the
+    attacker class fixed, at the CNN of
+    \textcite{dani2024passfilter}, and lets the generators vary; that
+    common attacker is what makes the ten methods comparable on a single
+    ASR axis. Robustness to the choice of attacker is then examined
+    separately (\Cref{sec:results-freq}), by re-evaluating the accepted
+    sets against a mixed-corpus CNN and a frequency ranker.
+
+    \item Prior work on neural distinguishers stops at the
+    demonstration that flatness is violated. It does not propose a
+    construction that restores flatness. This thesis proposes one and
+    measures how far it goes.
+
+    \item Prior filtering ideas exist in the honeyword literature, but
+    they operate at the candidate level and use non-learned filters
+    (frequency pruning, dictionary matching). The two-stage filter of
+    \Cref{sec:method-filter} uses a learned filter and, in its
+    set-level stage, constrains the distribution rather than the
+    individual candidates. The combination is what allows the filter
+    to enforce $\varepsilon$-flatness in the sense of
+    \Cref{eq:eps-flat}.
+\end{enumerate}
+%
+The remainder of the thesis develops these three points in detail.
+\Cref{ch:method} specifies the construction, and \Cref{ch:results}
+measures its effect on ASR across the ten generators.

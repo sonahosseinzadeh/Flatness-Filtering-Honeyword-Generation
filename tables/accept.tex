@@ -1,0 +1,25 @@
+% ===== Accept rate and avg tries =====
+\begin{table}[t]
+  \centering
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    & \multicolumn{2}{c}{$N_{\text{train}}{=}2000$}
+    & \multicolumn{2}{c}{$N_{\text{train}}{=}5000$}
+    & \multicolumn{2}{c}{$N_{\text{train}}{=}10000$} \\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+    \textbf{Method} & Accept & Tries & Accept & Tries & Accept & Tries \\
+    \midrule
+    HoneyGen + Set-Filter & 90.6\% & 1.56 & 25.9\% & 4.62 & 54.5\% & 3.51 \\
+    HoneyGen + Prescreen-Add & 94.8\% & 1.00 & 68.4\% & 1.00 & 84.6\% & 1.00 \\
+    HoneyGen + Prescreen-Ratio & 65.5\% & 1.00 & 38.7\% & 1.00 & 54.1\% & 1.00 \\
+    HoneyGen + Hybrid-Add & 96.5\% & 1.03 & 65.5\% & 1.49 & 83.3\% & 1.26 \\
+    HoneyGen + Hybrid-Ratio & 77.5\% & 1.70 & 29.3\% & 3.55 & 47.9\% & 2.68 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Acceptance rate and average regeneration attempts per accepted
+  set for the five filtered HoneyGen variants under the adopted thresholds.
+  Unfiltered methods have no filter (100\% acceptance, one attempt) and are
+  omitted. Every filtered method now exceeds 25\% acceptance at every
+  training size.}
+  \label{tab:accept}
+\end{table}

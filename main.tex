@@ -1,0 +1,95 @@
+\documentclass{masterthesis_ceng}
+% masterthesis for Computer Science
+% masterthesis_ceng for Computer Engineering
+% use the [nocoverpage] option to speed up compilation by skipping the cover page
+
+% the configuration is in the preamble.tex file, read it and modify it to change
+% the document appearance and included packages
+\input{preamble}
+
+% by default, we use the biblatex package to manage the bibliography
+% if you prefer to use bibtex, comment the following line and uncomment the
+% relevant lines at the end of the document
+\addbibresource{bib.bib}
+
+\input{acronyms}
+
+\begin{document}
+
+\title{ Flatness Filtering for Honeyword Generation }
+\author{Sona Hosseinzadeh Mahdavi} 
+ 
+
+% important for when you'll submit your thesis: your advisor(s) are "relatore", and the examiner is "correlatore".
+\advisor{Alessandro Armando}
+
+\examiner{Matteo Dell'Amico}
+
+\maketitle
+
+\begin{abstract}
+Honeyword schemes defend password databases against offline dictionary
+attacks by storing decoy passwords, or sweetwords, alongside the real
+one, so that a stolen hash file cannot be used without risking
+detection. Their security rests on flatness: the real password must be
+indistinguishable from its decoys. \textcite{dani2024passfilter} have
+shown that a deep-learning classifier can pick the real password out of
+a sweetword set, breaking the flatness of existing honeyword generation
+techniques.
+
+This thesis reuses that classifier defensively. A CNN flatness oracle
+scores each candidate sweetword set and rejects the sets in which the
+real password stands out, regenerating until a set passes or a
+regeneration cap is reached. I benchmark ten generation methods on the
+RockYou corpus --- rule-based chaffing, HoneyGen variants, and a
+self-trained GAN --- at training sizes of 2000, 5000, and 10000, and
+evaluate each against three attackers: a HoneyGen-tuned CNN, a
+mixed-corpus CNN, and a frequency ranker. The primary metric is the
+attacker's success rate at guess budget $t$ ($\mathrm{ASR}@t$): the
+fraction of accounts an attacker compromises within $t$ guesses against
+the $k = 20$ sweetwords of an account, whose random-guessing baseline is
+$t/k$.
+
+Unfiltered generators are highly vulnerable to the CNN: at $k = 20$,
+$\mathrm{ASR}@1$ reaches $0.28$--$0.35$, $\mathrm{ASR}@5$ $0.68$--$0.76$,
+and $\mathrm{ASR}@10$ $0.86$--$0.91$, far above the $0.05$, $0.25$, and
+$0.50$ random baselines. Ratio-based filtering is the strongest defence
+that stays deployable, cutting these to $0.05$--$0.07$, $0.29$--$0.34$,
+and $0.58$--$0.63$ --- close to the random-guessing line at every
+budget --- while keeping the real password near the middle of the
+attacker's ranking, which requires treating the acceptance rate as a
+deployment requirement. The GAN is a cautionary case: its reported
+$\mathrm{ASR}@5$ is $0.87$, not because it is easy to attack under a
+naive CNN (there it looks near zero) but because the real password sits
+at the bottom of the ranking ($F_{\text{rank}} \approx 0.92$), so a
+rational attacker inverts the ranking and succeeds; a mixed-corpus
+attacker independently pushes its $\mathrm{ASR}@5$ close to $1$. This is
+inverted distinguishability, not flatness.
+
+\medskip
+\noindent\textbf{Keywords:} Honeywords, passwords, authentication,
+flatness, deep learning.
+\end{abstract}
+
+
+\tableofcontents
+
+\include{introduction}
+
+\include{background}
+
+\include{related}
+
+\include{method}
+
+\include{results}
+
+\include{conclusion}
+
+% Bibliography using biber; comment this and uncomment the following lines to use bibtex instead
+\printbibliography
+% \bibliographystyle{alphaurl}
+% \bibliography{bib}
+
+\end{document}
+

@@ -1,0 +1,241 @@
+\chapter{Conclusion}
+\label{ch:conclusion}
+
+This thesis started from a mismatch. Honeyword-based breach detection
+depends on flatness --- the promise that an attacker who has read the
+password file cannot identify the real credential in a sweetword set
+with probability better than $1/k$ --- and every widely-deployed
+honeyword generator has been evaluated against attackers that no
+longer represent the state of the art. \textcite{dani2024passfilter}
+showed that a small character-level CNN, trained as a binary
+classifier on real-vs-decoy pairs, breaks flatness on essentially
+every honeyword scheme they tested. The question this left open was
+whether flatness can be restored against such an attacker without
+redesigning the generator.
+
+The answer we develop is affirmative but qualified. The same CNN
+discriminator that PassFilter used as an attack,
+reused unmodified as a defensive oracle at storage time, gates
+sweetword sets against a small set of measurable flatness conditions.
+Sets that fail are regenerated. Sets that pass are stored. The
+generator itself is not modified, and neither is the attacker; only
+the pipeline in which they are combined changes. On the ten-method
+benchmark of \Cref{ch:results}, the two-stage filter with a
+multiplicative pre-screening band reduces the attacker's $\mathrm{ASR}@5$
+from around $0.75$ for the unfiltered baselines to $0.29$--$0.34$ for
+the strongest configurations at $N_{\text{train}} = 10000$, with a
+real password ranked near the middle of the twenty candidates
+($F_{\text{rank}} \approx 0.42$--$0.46$). Under the thresholds adopted
+in \Cref{sec:method-threshold-tradeoff}, these ratio filters accept
+between $29\%$ and $78\%$ of passwords across corpus sizes --- well
+inside the deployable range, and far above the single-digit acceptance
+of the initial strict configuration.
+
+\section{Summary of Contributions}
+
+The concrete contributions of the thesis map to \Cref{ch:method}
+and \Cref{ch:results}. First, an attacker-relative definition of
+flatness formalized at the level of the attacker-induced distribution
+over a sweetword set, characterized by four measurable quantities
+($F_{\text{rank}}$, $F_{\text{ent}}$, top gap, and an
+$\varepsilon$-flatness bound $q_{\max} \le 1/k + \varepsilon_{\max}$ on
+the largest entry of the induced distribution). Second, a
+hybrid flatness-filtering algorithm that combines candidate-level
+pre-screening with set-level rejection sampling, generator-agnostic
+and requiring no retraining of either the underlying generator or the
+attacker.
+
+The benchmark itself is the third contribution: ten honeyword
+generation methods spanning rule-based tweaking,
+representation-learning HoneyGen variants, and a self-trained GAN,
+evaluated under a common experimental protocol at three training sizes,
+and against three attacker classes --- the
+HoneyGen-tuned CNN, a mixed-corpus CNN trained on several decoy
+families, and a frequency ranker --- which together separate genuine
+flatness from single-attacker artifacts.
+
+\section{What the Numbers Actually Say}
+
+Three quantitative findings deserve to be extracted from
+\Cref{ch:results} and stated cleanly enough for a reader in a hurry.
+
+Unfiltered honeyword generators are highly distinguishable to the
+CNN. All four baselines (Tweaking, Password-Model, Hybrid-Model,
+HoneyGen Baseline) report $\mathrm{ASR}@5$ in the range $0.68$--$0.77$
+across every training-set size we tested, about three times the
+random-guessing rate $0.25$.
+
+Flatness filtering reduces $\mathrm{ASR}@5$ substantially, and the
+ratio band is what does most of the work. At $N_{\text{train}} = 10000$
+the Prescreen-Ratio and Hybrid-Ratio variants push $\mathrm{ASR}@5$
+down to $0.341$ and $0.293$ with $F_{\text{rank}}$ near the ideal
+middle value of $0.5$ --- genuine near-uniform ranking --- while the
+additive filters achieve moderate reductions to the $0.51$--$0.61$
+range. The relative ordering of methods is preserved as the training
+corpus varies over $2000$, $5000$, and $10000$. Because acceptance is
+treated as a first-class deployability requirement
+(\Cref{sec:results-cost}), the recommended configurations are the
+ratio filters read through a two-stage criterion: the flattest methods
+among those that remain deployable.
+
+The GAN's apparent flatness is a distributional artifact and should not
+be read as a defence. Following the CNN's top guesses, its
+$\mathrm{ASR}@5$ at $N_{\text{train}} = 10000$ is essentially zero, but
+$F_{\text{rank}}$ is $0.920$: the real password is ranked near position
+twenty on the average set. The CNN considers the GAN-generated
+candidates to look \emph{more} like real passwords than the actual real
+password does, so a rational attacker inverts the ranking and reaches
+$\mathrm{ASR}@5 = 0.872$ --- the value the two-sided rational-attacker
+floor reports, which makes the GAN one of the weakest methods in the
+benchmark rather than the strongest. Two independent checks confirm the
+bias rather than flatness: under the frequency attacker the same GAN
+sets report $\mathrm{ASR}@5 = 0.388$, the highest in that column, and
+under the mixed-corpus attacker the GAN's $\mathrm{ASR}@5$ rises from
+about $0.07$ to $0.99$ at $N_{\text{train}} = 5000$. This artifact is
+pronounced at the larger corpus sizes; at $N_{\text{train}} = 2000$ the
+GAN's $F_{\text{rank}}$ is closer to the middle, so the inversion is a
+property that sharpens as the generator is trained on more data.
+
+\section{Limitations}
+\label{sec:conclusion-limitations}
+
+The framework has five limitations that a deployment would need to
+reason about explicitly.
+
+\paragraph{Coverage below 100\%.}
+The most important limitation for real-world use is that the
+countermeasure does not protect every user. The filter stores a
+sweetword set only when it can certify that set as flat; when it cannot
+do so within the regeneration budget, it gives up on that password, and
+that account receives no flatness-guaranteed set. At the operating point
+of this thesis the strongest (ratio) filters certify only between
+$29\%$ and $78\%$ of passwords (\Cref{tab:accept}), which leaves a large
+share of users --- in the worst case the majority --- without the
+guarantee. A deployable system, however, has to protect $100\%$ of
+accounts: it cannot simply refuse to store honeywords for the users it
+finds difficult. As it stands the method would therefore need to be
+paired with a fallback for the rejected passwords (for instance an
+unfiltered set), which weakens the guarantee for exactly those users.
+Reaching near-total coverage without sacrificing flatness is the single
+biggest obstacle to real-world adoption, and we return to it as an open
+question below.
+
+\paragraph{Model-relative guarantees.}
+The filter enforces flatness against one specific attacker: the
+character-level CNN of \Cref{sec:method-cnn}. A different attacker ---
+a larger CNN, a transformer, a discriminator that uses side
+information beyond the password string --- may recover
+distinguishability on sets the filter has certified. The guarantees
+are best read as flatness against this class of learned attacker,
+not as flatness in general. \Cref{sec:results-freq} shows that the
+guarantees transfer partially to the frequency attacker, which is
+weaker; whether they transfer to stronger models is an empirical
+question that requires running each candidate attacker through the
+same benchmark.
+
+\paragraph{One-sided set-level acceptance.}
+The set-level acceptance test constrains only the maximum of the
+induced distribution $q$. A set in which some honeyword receives an
+anomalously low $q$ would pass the test even though $q$ is not close
+to uniform. In our data this does not translate into ASR degradation,
+because ASR responds to the top of the ranking rather than the tail,
+but the acceptance predicate could be tightened to bound both ends of
+$q$. This is a small extension of \Cref{alg:hff} and would be worth
+doing in a production build of the filter.
+
+\paragraph{Acceptance-rate cost of the ratio filter.}
+The strongest security in the benchmark, from the Prescreen-Ratio and
+Hybrid-Ratio filters, comes at the lowest acceptance rates among the
+filtered methods --- between $29\%$ and $78\%$ across corpus sizes,
+against $65\%$--$97\%$ for the additive filters --- and a higher
+average number of regeneration attempts, up to about $4.6$ per
+accepted set (\Cref{tab:accept}). Under the relaxed thresholds this is
+no longer the crippling single-digit acceptance of the initial
+configuration: every filtered method clears the $25\%$ deployability
+mark at every training size. The residual cost is nonetheless real and
+falls entirely at storage time, since filtering happens once per
+account for the lifetime of the credential. A deployment that cannot
+afford the ratio filter's rejection budget can move to an additive
+filter and recover most of the security gain over the unfiltered
+baseline at a substantially higher acceptance rate.
+
+\paragraph{Corpus and language.}
+All experiments use the cleaned RockYou corpus, a leak of primarily
+English-language, user-chosen web passwords from a specific consumer
+service. The distributional properties of this corpus --- long
+low-probability tails, common suffixes, digit sequences at the end
+--- are what the FastText embeddings, the GAN, and the CNN all learn
+to model. Whether the same numbers hold on corpora with different
+structural properties (enterprise credentials, non-English leaks,
+machine-generated passwords) is an empirical question. Extending the
+benchmark to \emph{darkc0de} as a second corpus is on the immediate
+next-steps list for this pipeline.
+
+\section{Open Questions}
+
+Beyond the immediate limitations, five research questions remain open.
+
+The first is adversarial adaptation. The filter, as constructed, is a
+static defense: the oracle CNN is trained once and reused. An attacker
+who knew the filter existed and had access to a sample of accepted
+sets could train against those sets rather than against the raw
+generator output. Whether the generator, the oracle, and the attacker
+can be co-trained toward a stable equilibrium at
+$\mathrm{ASR}@5 \approx 0.25$ is a question this thesis does not
+resolve. The pieces are in place to run the experiment; the answer
+requires it.
+
+The second is transferability across a class of attackers. The
+current guarantees are against one CNN. A more useful guarantee would
+be against a class of models --- for example, any CNN of bounded
+depth and width, or any linear classifier over a fixed feature set.
+The filter could then use an ensemble oracle that discriminates
+against the worst-case member of the class.
+\textcite{chakraborty2022hbat} discuss related notions in the survey,
+and connecting them to the flatness formalism of
+\Cref{sec:method-formalism} is a natural extension.
+
+The third is the theoretical relationship between the flatness
+metrics. $F_{\text{rank}}$, $F_{\text{ent}}$, and $\varepsilon$-flatness
+are correlated but not equivalent, and the acceptance predicate uses
+all three plus the top gap. It is not obvious that this is the
+smallest set of conditions sufficient to bound $\mathrm{ASR}@t$, or
+that all three are individually necessary. A cleaner theoretical
+characterization --- an inequality connecting $q_{\text{real}}$,
+$F_{\text{ent}}$, and expected $\mathrm{ASR}@t$ --- would allow the
+filter to constrain fewer quantities without giving up guarantees.
+
+The fourth is the LLM-based generator line. The construction of
+\Cref{sec:method-filter} is generator-agnostic and would apply
+without modification to sweetword sets produced by the
+chunk-manipulation and Metropolis-Hastings large language model of
+the kind reviewed in \Cref{sec:related-llm}. Whether the resulting
+$\mathrm{ASR}@5$ curves match, exceed, or fall below the
+ratio-filtered HoneyGen numbers reported here is an experiment worth
+running.
+
+The fifth is coverage. As the limitations above stress, the filter
+protects only the passwords for which it can certify a flat set, and at
+the current operating point that fraction is well below $100\%$. A
+practical countermeasure must cover every account, so the open question
+is how to reach near-total coverage without weakening flatness. Possible
+routes include stronger or password-specific generators that produce
+flat candidates more reliably, thresholds adapted per password to the
+hardest cases, or a principled fallback for the residual passwords that
+no generator can flatten. Which of these --- or which combination ---
+closes the gap is the most important question this thesis leaves open.
+
+\section{Closing}
+
+Honeywords are a modest defense with an outsized property: they turn
+a silent failure --- offline password recovery from a stolen hash
+file --- into an observable event at the authentication server. That
+property is worth preserving as attacker capabilities improve, and
+the argument this thesis makes is that each new class of attacker
+should be reused as an enforcement tool at storage time. The
+classifier that would otherwise recover the real password becomes
+the gatekeeper that prevents any sweetword set with a recoverable
+real password from being stored. The reversal is small and the
+numbers are moderate, but the direction feels right: as long as
+attackers keep getting better, defenders can keep the same tools,
+pointed the other way.

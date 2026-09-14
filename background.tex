@@ -1,0 +1,250 @@
+\chapter{Background}
+\label{ch:background}
+
+This chapter collects the definitions and mechanisms that the rest of
+the thesis takes as given. \Cref{sec:bg-guessing} describes how offline
+password guessing works and what a breach exposes.
+\Cref{sec:bg-honeywords} states the honeyword primitive introduced by
+\textcite{juels2013honeywords} and the HoneyChecker architecture that
+supports it. \Cref{sec:bg-flatness} formalizes the classical notion of
+flatness relative to a fixed attacker class. \Cref{sec:bg-cnn}
+introduces the character-level convolutional networks that
+\Cref{ch:related} and \Cref{ch:method} both build on, and
+\Cref{sec:bg-fasttext} covers the FastText subword embeddings used by
+the HoneyGen family of generators.
+
+Every concept is presented at the level required to follow the
+argument in later chapters. The formal set-level flatness definition
+that this thesis introduces is deferred to \Cref{sec:method-formalism},
+since it is part of the contribution rather than of the background.
+
+\section{Password Guessing After a Breach}
+\label{sec:bg-guessing}
+
+Password authentication systems store a transformation of the user's
+credential rather than the credential itself. In modern deployments
+this transformation is a salted, slow cryptographic hash such as bcrypt,
+scrypt, or Argon2. When a user submits a password $w$ at login, the
+server computes the hash and compares it to the stored value; a match
+authenticates the session.
+
+Two attack models are relevant here. In the \emph{online} model the
+attacker submits guesses through the authentication interface, and the
+server can rate-limit or lock accounts after a small number of failed
+attempts. In the \emph{offline} model the attacker has obtained a copy
+of the password file and can test guesses locally at the rate their
+hardware allows. Modern GPU rigs push this rate high enough that the
+security of the deployment is determined almost entirely by the
+password's position in the guessing order used by the attacker.
+
+The guessing order itself has been the subject of a long research
+line. \textcite{narayanan2005fast} showed that Markov models of
+character sequences accelerate cracking substantially over dictionary
+attacks. \textcite{weir2009pcfg} extracted probabilistic context-free
+grammars from leaked corpora and produced guesses in decreasing order
+of estimated probability. \textcite{melicher2016fast} used neural
+language models over character sequences to reach guessing rates that
+outperform both Markov and PCFG models on realistic budgets. All three
+lines share the same interface: given a candidate password, produce a
+score or a rank that reflects how likely it is to appear in a real
+distribution.
+
+The consequence for defenders is that a database compromise is silent.
+Nothing distinguishes an offline guessing campaign from a period in
+which no attacker has the hash file at all, until the attacker's
+recovered credentials are used against a live login. Honeywords, the
+subject of the next section, are designed to break that silence.
+
+\section{The Honeyword Primitive}
+\label{sec:bg-honeywords}
+
+\subsection{Sweetword Storage}
+
+\textcite{juels2013honeywords} propose the following modification to
+the password file. For each user account the server stores not a
+single hash but a set of $k$ hashes, one of which corresponds to the
+real password and the other $k-1$ to \emph{honeywords}: decoy strings
+generated to be difficult to distinguish from the real password. We
+call the set of $k$ candidates the \emph{sweetword set}, and any
+element of it a \emph{sweetword}. The honeywords are not stored in
+clear anywhere; only their hashes appear in the password file.
+
+The order of the sweetwords in the file is either randomized per user
+or made independent of the identity of the real password. The
+information about which position corresponds to the real password is
+stored elsewhere, in a component we describe next.
+
+\subsection{The HoneyChecker}
+
+The scheme separates two pieces of information that were previously
+combined in a single password file: the credential material (the $k$
+hashes) and the identity of the correct one (an index in
+$\{1, \ldots, k\}$). The credential material stays on the main
+authentication server, and the index is held by a second, hardened
+component called the \emph{HoneyChecker}. The HoneyChecker exposes a
+narrow interface: given a user identifier and an index, it returns
+whether the index is the correct one, and it raises an alarm if the
+index is not.
+
+An honest login proceeds as follows. The user submits their password.
+The authentication server hashes it and looks for a match among the
+$k$ stored sweetword hashes. If a match is found at index $j$, the
+server queries the HoneyChecker with that index. The HoneyChecker
+returns \emph{accept} when $j$ is the correct index, and the login
+succeeds. This is indistinguishable to the user from an ordinary
+password check.
+
+A honeyword-triggered login proceeds differently. The attacker, who
+has read the password file offline and recovered one of the $k$
+hashes, attempts a login using the recovered plaintext. The
+authentication server finds a match at some index $j'$ and queries the
+HoneyChecker. If $j'$ is not the correct index, the HoneyChecker
+returns \emph{reject} and, in addition, raises an alarm. The alarm is
+what makes the primitive a breach detector: a decoy login is
+observable in real time, whereas a successful compromise otherwise is
+not.
+
+The distributed trust assumption is that a single adversary does not
+compromise both the password file and the HoneyChecker. Reading only
+the password file leaves the attacker with $k$ indistinguishable
+hashes; compromising only the HoneyChecker gives away indices with no
+credential material to attach them to. This assumption is what makes
+the scheme meaningful; \textcite{juels2013honeywords} and the
+subsequent survey by \textcite{chakraborty2022hbat} discuss its
+practical implications at length, and we take it as given throughout
+the thesis.
+
+\subsection{Alarms and Response}
+
+Once the HoneyChecker raises an alarm, the response is a policy
+decision outside the scope of this thesis. Depending on the
+deployment, the response can lock the affected account, force a
+password reset for a class of users, or trigger a wider incident
+investigation. The relevant property here is that the alarm is a
+signal that the server did not have before the primitive was in place.
+
+\section{Classical Flatness}
+\label{sec:bg-flatness}
+
+\subsection{The Attacker's Task}
+
+Given only the sweetword set $S = \{w_1, \ldots, w_k\}$, the attacker
+must decide which element is the real password. This is a
+$k$-way distinguishing problem. If the honeywords are well
+constructed, the attacker's success probability should be close to
+$1/k$, the rate of uniform random guessing; if the honeywords are
+distinguishable, the success probability is higher.
+
+The exact success probability depends on the attacker's knowledge and
+inference capabilities. Juels and Rivest's original paper models the
+attacker as a probabilistic ranker: a function $A$ that, given a
+candidate password, returns a probability that it comes from the
+distribution of real user-chosen passwords. The attacker orders the
+$k$ sweetwords by $A$'s output and guesses the top-ranked one.
+
+\subsection{$1/k$-Flatness and $\varepsilon$-Flatness}
+
+Let $A$ be an attacker and let $p_A(S)$ denote the probability that
+$A$ identifies $w^{*}$ on its first guess, taken over the random
+choice of $S$ and the internal randomness of the generator. The scheme
+is called \emph{$1/k$-flat} against $A$ if
+%
+\begin{equation}
+p_A(S) \;=\; 1/k,
+\end{equation}
+%
+which is the uniform-random rate. Since perfect equality is rarely
+attainable, the literature relaxes the condition to
+\emph{$\varepsilon$-flatness}: the scheme is $\varepsilon$-flat if
+%
+\begin{equation}
+p_A(S) \;\le\; \frac{1 + \varepsilon}{k},
+\end{equation}
+%
+for some fixed $\varepsilon > 0$. The two definitions coincide as
+$\varepsilon \to 0$.
+
+Both definitions are attacker-relative in principle: they depend on
+the class of function $A$ used. The classical literature restricts $A$
+to the probabilistic ranker family described above. \Cref{ch:method}
+extends the definition to arbitrary binary discriminators and
+formalizes it at the level of the induced distribution over the set;
+that extension is one of the contributions of this thesis.
+
+\subsection{Related Security Properties}
+
+\textcite{chakraborty2022hbat} organize the honeyword security
+literature around three properties: flatness, denial-of-service (DoS)
+resistance, and multiple-system vulnerability (MSV) resistance. DoS
+resistance controls the rate at which a legitimate but confused user
+can be locked out by accidentally submitting a honeyword. MSV
+resistance controls the extent to which learning the sweetwords for
+one user helps an attacker for other users. This thesis addresses only
+flatness. The DoS and MSV properties are largely orthogonal to the
+filtering construction we develop, and we return to them briefly in
+\Cref{ch:conclusion}.
+
+\section{Character-Level Convolutional Classifiers}
+\label{sec:bg-cnn}
+
+Character-level convolutional networks are the standard architecture
+for both attack and defense in this thesis. The design is a small
+adaptation of the text classifier introduced by \textcite{kim2014cnn}
+and the character-level variants of \textcite{zhang2015character}.
+
+A password $w$ of at most $L$ characters is right-padded to length $L$
+and each character is mapped to an embedding vector of dimension $d$
+through a lookup table. The resulting $L \times d$ matrix is treated
+as a one-dimensional signal with $d$ input channels. One or more
+one-dimensional convolutional layers extract features from local
+$n$-character windows: each convolution with kernel width $m$ applies
+a learned filter to every window of $m$ consecutive positions and
+produces a new feature map. A ReLU activation follows each
+convolution. A max-pooling step reduces the length dimension, and a
+fully connected layer projects the pooled features to the number of
+output classes. A final softmax converts the logits to class
+probabilities.
+
+For the binary classifier used here, the two output classes are
+\emph{real} and \emph{honeyword}, and the quantity of interest is
+$P(\text{real} \mid w)$, the probability the network assigns to the
+real class for the input password. This score is the raw material for
+every flatness measurement in the thesis. The precise architecture and
+training procedure are specified in \Cref{sec:method-cnn}.
+
+The property that makes this class of network well suited to password
+strings is that its filters operate on local character windows. This
+matches the empirical observation that real user-chosen passwords
+concentrate distinguishing structure at the level of short substrings
+(digit sequences, common suffixes, case patterns), which the
+convolutional layers pick up efficiently without requiring token-level
+segmentation.
+
+\section{FastText Password Embeddings}
+\label{sec:bg-fasttext}
+
+The HoneyGen generator family described in \Cref{sec:method-gens} and
+reviewed in \Cref{ch:related} uses FastText embeddings as its
+representation of the password space. FastText, introduced by
+\textcite{bojanowski2017fasttext}, extends the skipgram word
+representation of \textcite{mikolov2013distributed} by representing
+each token as the sum of embeddings for its character $n$-grams. A
+password like \texttt{qwerty2020} is represented not only by an
+embedding for the string as a whole but by the sum of embeddings for
+all its character $n$-grams of length in a configured range.
+
+Two properties of this representation matter for honeyword generation.
+First, the model produces embeddings for out-of-vocabulary strings,
+which is essential because a generator is asked to produce passwords
+it has never seen. Second, the nearest neighbors of a password in
+embedding space tend to share sub-word structure: a password
+ending in \texttt{2020} is close to passwords ending in \texttt{2021},
+\texttt{2019}, and so on. This makes the embedding a source of
+plausible perturbations of a real password without requiring
+hand-written rules.
+
+The HoneyGen family uses a skipgram FastText model trained on
+the oracle corpus, with the smallest possible \texttt{minCount} and a
+minimum $n$-gram length of two. \Cref{sec:method-gens} gives the exact
+configuration used in the experiments; the description here is the
+background needed to follow that section.

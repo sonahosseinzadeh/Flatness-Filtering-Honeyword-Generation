@@ -12,7 +12,5 @@
 *.lot
 *.lol
 
-# PDF output (keep source logos, ignore compiled output)
-main.pdf
-final_thesis.pdf
+# Intermediate thesis versions (keep final output)
 thesis_v*.pdf

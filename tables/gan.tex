@@ -12,16 +12,16 @@
     GAN (Self-Trained) & 0.025 & 0.872 & 0.872 & 0.920 \\
     \bottomrule
   \end{tabular}
-  \caption{Two attacker strategies at $N_{\text{train}}=10000$:
+    \caption{Two attacker strategies at $N_{\text{train}}=10000$.
   \emph{Follow-CNN} guesses the CNN's top-ranked candidates,
-  \emph{Anti-CNN} guesses its bottom-ranked ones, and \emph{Reported}
-  is the rational-attacker value of \Cref{eq:rational}. For the baseline
-  and the ratio filters, Follow-CNN is the larger of the two directions
-  and $F_{\text{rank}}$ sits near or above $0.4$, so the reported value
-  simply follows the CNN. The GAN is the exception --- its
-  $F_{\text{rank}}$ near $1$ places the real password at the bottom, so
+  \emph{Anti-CNN} guesses its bottom-ranked ones, and \emph{Reported} is
+  the rational-attacker value of \Cref{eq:rational}. For the baseline and
+  the ratio filters, Follow-CNN is the larger of the two and
+  $F_{\text{rank}}$ sits near or above $0.4$, so the reported value
+  simply follows the CNN. The GAN is the exception: its $F_{\text{rank}}$
+  of $0.920$ puts the real password at the bottom of the set, so
   Follow-CNN succeeds only $2.5\%$ of the time while Anti-CNN reaches
-  $87\%$. Its low Follow-CNN score is inverted distinguishability, not
-  flatness.}
+  $87\%$. Its low Follow-CNN score is inverted distinguishability rather
+  than flatness.}
   \label{tab:gan}
 \end{table}

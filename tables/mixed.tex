@@ -17,11 +17,13 @@
     GAN (Self-Trained) & 0.212 & 0.336 \\
     \bottomrule
   \end{tabular}
-  \caption{$\mathrm{ASR}@5$ under the HoneyGen-only CNN attacker versus the
-  mixed-corpus attacker (Tweak + Password-Model + HoneyGen + GAN negatives)
-  at $N_{\text{train}}=2000$. The GAN moves off the near-floor value it
-  reported under the CNN-only attacker ($0.21 \to 0.34$), while the
-  filtered ratio methods shift comparatively little; the effect is much
-  larger at $N_{\text{train}}=5000$ (\Cref{sec:results-gan}).}
+    \caption{$\mathrm{ASR}@5$ under the HoneyGen-only CNN attacker versus
+  the mixed-corpus attacker (Tweak + Password-Model + HoneyGen + GAN
+  negatives) at $N_{\text{train}}=2000$, both following the ranking in
+  the ordinary direction. The GAN shows the largest relative increase of
+  any method, from $0.212$ to $0.336$, because the mixed attacker has
+  seen GAN decoys during training and needs no inversion to exploit
+  them; the filtered ratio methods shift comparatively little. The gap
+  is far wider at $N_{\text{train}}=5000$ (\Cref{sec:results-gan}).}
   \label{tab:mixed}
 \end{table}

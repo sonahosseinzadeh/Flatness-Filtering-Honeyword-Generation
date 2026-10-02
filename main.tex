@@ -25,8 +25,10 @@
 
 \examiner{Matteo Dell'Amico}
 
-\maketitle
+\submitmonth{October}
+\submityear{2026}
 
+\maketitle
 \begin{abstract}
 Honeyword schemes defend password databases against offline dictionary
 attacks by storing decoy passwords, or sweetwords, alongside the real
@@ -34,42 +36,74 @@ one, so that a stolen hash file cannot be used without risking
 detection. Their security rests on flatness: the real password must be
 indistinguishable from its decoys. \textcite{dani2024passfilter} have
 shown that a deep-learning classifier can pick the real password out of
-a sweetword set, breaking the flatness of existing honeyword generation
-techniques.
+a sweetword set, which breaks flatness for the honeyword generators in
+current use.
 
-This thesis reuses that classifier defensively. A CNN flatness oracle
-scores each candidate sweetword set and rejects the sets in which the
+This thesis reuses that classifier as a defence. A CNN flatness oracle
+scores each candidate sweetword set and rejects the ones in which the
 real password stands out, regenerating until a set passes or a
 regeneration cap is reached. I benchmark ten generation methods on the
-RockYou corpus --- rule-based chaffing, HoneyGen variants, and a
-self-trained GAN --- at training sizes of 2000, 5000, and 10000, and
-evaluate each against three attackers: a HoneyGen-tuned CNN, a
-mixed-corpus CNN, and a frequency ranker. The primary metric is the
-attacker's success rate at guess budget $t$ ($\mathrm{ASR}@t$): the
-fraction of accounts an attacker compromises within $t$ guesses against
-the $k = 20$ sweetwords of an account, whose random-guessing baseline is
-$t/k$.
+RockYou corpus: rule-based chaffing, HoneyGen variants, and a
+self-trained GAN, at training sizes of 2000, 5000, and 10000. Each is
+evaluated against three attackers, a HoneyGen-tuned CNN, a mixed-corpus
+CNN, and a frequency ranker. The metric throughout is the attacker's
+success rate at guess budget $t$ ($\mathrm{ASR}@t$), the fraction of
+accounts compromised within $t$ guesses against the $k = 20$ sweetwords
+of an account. Random guessing gives $t/k$.
 
-Unfiltered generators are highly vulnerable to the CNN: at $k = 20$,
-$\mathrm{ASR}@1$ reaches $0.28$--$0.35$, $\mathrm{ASR}@5$ $0.68$--$0.76$,
-and $\mathrm{ASR}@10$ $0.86$--$0.91$, far above the $0.05$, $0.25$, and
-$0.50$ random baselines. Ratio-based filtering is the strongest defence
-that stays deployable, cutting these to $0.05$--$0.07$, $0.29$--$0.34$,
-and $0.58$--$0.63$ --- close to the random-guessing line at every
-budget --- while keeping the real password near the middle of the
-attacker's ranking, which requires treating the acceptance rate as a
-deployment requirement. The GAN is a cautionary case: its reported
-$\mathrm{ASR}@5$ is $0.87$, not because it is easy to attack under a
-naive CNN (there it looks near zero) but because the real password sits
-at the bottom of the ranking ($F_{\text{rank}} \approx 0.92$), so a
-rational attacker inverts the ranking and succeeds; a mixed-corpus
-attacker independently pushes its $\mathrm{ASR}@5$ close to $1$. This is
-inverted distinguishability, not flatness.
+The unfiltered generators are easy for the CNN to break. At $k = 20$
+they reach $\mathrm{ASR}@1$ of $0.28$--$0.35$, $\mathrm{ASR}@5$ of
+$0.68$--$0.76$, and $\mathrm{ASR}@10$ of $0.86$--$0.91$, against random
+baselines of $0.05$, $0.25$, and $0.50$. Ratio-based filtering is the
+strongest defence that remains deployable, cutting those figures to
+$0.05$--$0.07$, $0.29$--$0.34$, and $0.58$--$0.63$, and leaving the real
+password near the middle of the attacker's ranking. Reaching that point
+means treating the acceptance rate as a deployment requirement rather
+than a diagnostic.
+
+The GAN deserves a warning. Its reported $\mathrm{ASR}@5$ is $0.87$,
+which looks nothing like the near-zero value a naive CNN attacker
+measures. The reason is that the real password sits at the bottom of the
+ranking ($F_{\text{rank}} \approx 0.92$), so an attacker who inverts the
+ranking recovers it almost every time. A mixed-corpus attacker pushes
+the same sets close to $1$. What the GAN produces is inverted
+distinguishability rather than flatness.
+
 
 \medskip
 \noindent\textbf{Keywords:} Honeywords, passwords, authentication,
 flatness, deep learning.
 \end{abstract}
+
+
+\chapter*{Declaration on the Use of AI Tools}
+\addcontentsline{toc}{chapter}{Declaration on the Use of AI Tools}
+
+In accordance with the University of Genoa guidelines on the use of
+artificial intelligence (Linee guida IA, Art.~3 and Art.~10), I declare
+the following.
+
+Claude (Anthropic) was used as a writing assistant while I prepared this
+document, in three ways. After I had read the relevant literature
+myself, it helped me organise and summarise that material and phrase the
+comparisons in \Cref{ch:related}. It also helped me analyse my experimental
+results and generating the \LaTeX{} source of the tables and figures from my data. 
+in addition, drafted and revised prose, which is the most substantial of the three.
+Sections of \Cref{ch:method} and \Cref{ch:conclusion} along with the abstract,
+were drafted with myself and the assistant working together, and then reviewed and 
+edited by me. Sections of \Cref{ch:results} were drafted with me and reviewed by
+its assistant,and then edited by me. 
+
+The research reported here is my own. I designed the filtering method,
+implemented the pipeline, trained all the models, ran every experiment,
+and produced all the data,curves and tables. Every number in this thesis comes from my own
+runs. I read the assistant's output critically and corrected it where it
+was wrong.
+
+No personal data were supplied to the tool, and the password corpora
+used in this work were never uploaded to it. I have verified the
+technical content, the numerical values and the citations, and I take
+full responsibility for this thesis.
 
 
 \tableofcontents

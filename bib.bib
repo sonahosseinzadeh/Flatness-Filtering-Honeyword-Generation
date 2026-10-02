@@ -1,132 +1,177 @@
-@article{DBLP:journals/x/Turing50,
-  author       = {Alan M. Turing},
-  title        = {Computing machinery and intelligence},
-  journal      = {Mind},
-  volume       = {{LIX}},
-  number       = {236},
-  pages        = {433--460},
-  year         = {1950},
-  url          = {https://doi.org/10.1093/mind/LIX.236.433},
-  doi          = {10.1093/MIND/LIX.236.433},
-  urn          = {urn:nbn:de:hbz:6:1-85465},
-  timestamp    = {Tue, 16 Aug 2022 23:09:52 +0200},
-  biburl       = {https://dblp.org/rec/journals/x/Turing50.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
-}
+% =====================================================================
+%  bib.bib  —  Flatness Filtering for Honeyword Generation
+%  Keys already used in the thesis are kept unchanged.
+%  Entries marked [CORRECTED] fix errors in the previous bib file.
+%  Entries marked [NEW] are papers you read that were not yet in the bib.
+% =====================================================================
 
-@inproceedings{DBLP:conf/coco/Karp72,
-  author       = {Richard M. Karp},
-  editor       = {Raymond E. Miller and
-                  James W. Thatcher},
-  title        = {Reducibility Among Combinatorial Problems},
-  booktitle    = {Proceedings of a symposium on the Complexity of Computer Computations,
-                  held March 20-22, 1972, at the {IBM} Thomas J. Watson Research Center,
-                  Yorktown Heights, New York, {USA}},
-  series       = {The {IBM} Research Symposia Series},
-  pages        = {85--103},
-  publisher    = {Plenum Press, New York},
-  year         = {1972},
-  url          = {https://doi.org/10.1007/978-1-4684-2001-2\_9},
-  doi          = {10.1007/978-1-4684-2001-2\_9},
-  timestamp    = {Wed, 16 Mar 2022 23:55:58 +0100},
-  biburl       = {https://dblp.org/rec/conf/coco/Karp72.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
-}
+% ---------------------------------------------------------------------
+%  Honeywords: foundations
+% ---------------------------------------------------------------------
 
-% ===== Thesis references (verify details against your own bib.bib) =====
 @inproceedings{juels2013honeywords,
   author    = {Juels, Ari and Rivest, Ronald L.},
   title     = {Honeywords: Making Password-Cracking Detectable},
-  booktitle = {Proceedings of the ACM SIGSAC Conference on Computer and Communications Security (CCS)},
+  booktitle = {Proceedings of the 2013 ACM SIGSAC Conference on Computer and Communications Security (CCS)},
+  pages     = {145--160},
+  publisher = {ACM},
   year      = {2013},
-  pages     = {145--160}
+  doi       = {10.1145/2508859.2516671}
 }
+
+% [NEW]
+@inproceedings{brainard2006fourth,
+  author    = {Brainard, John and Juels, Ari and Rivest, Ronald L. and Szydlo, Michael and Yung, Moti},
+  title     = {Fourth-Factor Authentication: Somebody You Know},
+  booktitle = {Proceedings of the 13th ACM Conference on Computer and Communications Security (CCS)},
+  pages     = {168--178},
+  publisher = {ACM},
+  year      = {2006},
+  doi       = {10.1145/1180405.1180427}
+}
+
+% [NEW]
+@article{kaghazgaran2015insider,
+  author  = {Kaghazgaran, Parisa and Takabi, Hassan},
+  title   = {Toward an Insider Threat Detection Framework Using Honey Permissions},
+  journal = {Journal of Internet Services and Information Security (JISIS)},
+  volume  = {5},
+  number  = {3},
+  pages   = {19--36},
+  year    = {2015}
+}
+
+% [CORRECTED] title and full author list; volume/issue/article number added.
+% Published online Dec. 2022, in the Aug. 2023 issue.
+@article{chakraborty2022hbat,
+  author  = {Chakraborty, Nilesh and Li, Jianqiang and Leung, Victor C. M. and Mondal, Samrat and Pan, Yi and Luo, Chengwen and Mukherjee, Mithun},
+  title   = {Honeyword-based Authentication Techniques for Protecting Passwords: A Survey},
+  journal = {ACM Computing Surveys},
+  volume  = {55},
+  number  = {8},
+  pages   = {169:1--169:37},
+  year    = {2023},
+  doi     = {10.1145/3552431}
+}
+
+% [NEW]
+@inproceedings{wang2018security,
+  author    = {Wang, Ding and Cheng, Haibo and Wang, Ping and Yan, Jeff and Huang, Xinyi},
+  title     = {A Security Analysis of Honeywords},
+  booktitle = {Network and Distributed System Security Symposium (NDSS)},
+  year      = {2018},
+  doi       = {10.14722/ndss.2018.23142}
+}
+
+% [NEW]
+@inproceedings{huang2024impact,
+  author    = {Huang, Zonghao and Bauer, Lujo and Reiter, Michael K.},
+  title     = {The Impact of Exposed Passwords on Honeyword Efficacy},
+  booktitle = {33rd USENIX Security Symposium},
+  year      = {2024},
+  note      = {Preprint: arXiv:2309.10323}
+}
+
+% [NEW]
+@inproceedings{wang2022attack,
+  author    = {Wang, Ding and Zou, Yunkai and Dong, Qiying and Song, Yuanming and Huang, Xinyi},
+  title     = {How to Attack and Generate Honeywords},
+  booktitle = {2022 IEEE Symposium on Security and Privacy (SP)},
+  publisher = {IEEE},
+  year      = {2022},
+  doi       = {10.1109/SP46214.2022.9833598}
+}
+
+% ---------------------------------------------------------------------
+%  Honeyword generation techniques
+% ---------------------------------------------------------------------
+
+% [NEW]
+@article{erguler2016achieving,
+  author  = {Erguler, Imran},
+  title   = {Achieving Flatness: Selecting the Honeywords from Existing User Passwords},
+  journal = {IEEE Transactions on Dependable and Secure Computing},
+  volume  = {13},
+  number  = {2},
+  pages   = {284--295},
+  year    = {2016},
+  doi     = {10.1109/TDSC.2015.2406707}
+}
+
+% [NEW]
+@inproceedings{chakraborty2018questionnaire,
+  author    = {Chakraborty, Nilesh and Singh, Shreya and Mondal, Samrat},
+  title     = {On Designing a Questionnaire Based Honeyword Generation Approach for Achieving Flatness},
+  booktitle = {2018 17th IEEE International Conference on Trust, Security and Privacy in Computing and Communications / 12th IEEE International Conference on Big Data Science and Engineering (TrustCom/BigDataSE)},
+  pages     = {444--455},
+  publisher = {IEEE},
+  year      = {2018},
+  doi       = {10.1109/TrustCom/BigDataSE.2018.00071}
+}
+
+% [NEW]
+@article{akif2019achieving,
+  author  = {Akif, Omar Z. and Sabeeh, Ann F. and Rodgers, G. J. and Al-Raweshidy, H. S.},
+  title   = {Achieving Flatness: Honeywords Generation Method for Passwords Based on User Behaviours},
+  journal = {International Journal of Advanced Computer Science and Applications (IJACSA)},
+  volume  = {10},
+  number  = {3},
+  pages   = {28--37},
+  year    = {2019},
+  doi     = {10.14569/IJACSA.2019.0100305}
+}
+
 @inproceedings{dionysiou2021honeygen,
   author    = {Dionysiou, Antreas and Vassiliades, Vassilis and Athanasopoulos, Elias},
   title     = {{HoneyGen}: Generating Honeywords Using Representation Learning},
-  booktitle = {Proceedings of the ACM Asia Conference on Computer and Communications Security (ASIA CCS)},
+  booktitle = {Proceedings of the 2021 ACM Asia Conference on Computer and Communications Security (ASIA CCS)},
+  pages     = {265--279},
+  publisher = {ACM},
   year      = {2021},
-  pages     = {265--279}
+  doi       = {10.1145/3433210.3453092}
 }
-@article{dani2024passfilter,
-  author  = {Dani, and others},
-  title   = {{PassFilter}: Detecting Honeywords with Learned Discriminators},
-  journal = {arXiv preprint},
-  year    = {2024}
+
+% [NEW]
+@article{yasser2022harmony,
+  author  = {Yasser, Yasser A. and Sadiq, Ahmed T. and AlHamdani, Wasim},
+  title   = {A Proposed Harmony Search Algorithm for Honeyword Generation},
+  journal = {Advances in Human-Computer Interaction},
+  volume  = {2022},
+  pages   = {Article ID 9607550},
+  year    = {2022},
+  doi     = {10.1155/2022/9607550}
 }
-@article{chakraborty2022hbat,
-  author  = {Chakraborty, Nilesh and others},
-  title   = {A Survey of Honeyword-Based Authentication Techniques},
-  journal = {ACM Computing Surveys},
-  year    = {2022}
+
+% [NEW]
+@misc{yu2022targeted,
+  author        = {Yu, Fangyi and Vargas Martin, Miguel},
+  title         = {Targeted Honeyword Generation with Language Models},
+  year          = {2022},
+  eprint        = {2208.06946},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI}
 }
-@inproceedings{hitaj2019passgan,
-  author    = {Hitaj, Briland and Gasti, Paolo and Ateniese, Giuseppe and Perez-Cruz, Fernando},
-  title     = {{PassGAN}: A Deep Learning Approach for Password Guessing},
-  booktitle = {Applied Cryptography and Network Security (ACNS)},
-  year      = {2019},
-  pages     = {217--237}
-}
-@inproceedings{goodfellow2014generative,
-  author    = {Goodfellow, Ian J. and Pouget-Abadie, Jean and Mirza, Mehdi and Xu, Bing and Warde-Farley, David and Ozair, Sherjil and Courville, Aaron and Bengio, Yoshua},
-  title     = {Generative Adversarial Nets},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  year      = {2014}
-}
-@inproceedings{kim2014cnn,
-  author    = {Kim, Yoon},
-  title     = {Convolutional Neural Networks for Sentence Classification},
-  booktitle = {Proceedings of the Conference on Empirical Methods in Natural Language Processing (EMNLP)},
-  year      = {2014},
-  pages     = {1746--1751}
-}
-@inproceedings{zhang2015character,
-  author    = {Zhang, Xiang and Zhao, Junbo and LeCun, Yann},
-  title     = {Character-Level Convolutional Networks for Text Classification},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  year      = {2015}
-}
-@article{bojanowski2017fasttext,
-  author  = {Bojanowski, Piotr and Grave, Edouard and Joulin, Armand and Mikolov, Tomas},
-  title   = {Enriching Word Vectors with Subword Information},
-  journal = {Transactions of the Association for Computational Linguistics (TACL)},
-  volume  = {5},
-  year    = {2017},
-  pages   = {135--146}
-}
-@inproceedings{mikolov2013distributed,
-  author    = {Mikolov, Tomas and Sutskever, Ilya and Chen, Kai and Corrado, Greg and Dean, Jeffrey},
-  title     = {Distributed Representations of Words and Phrases and their Compositionality},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  year      = {2013}
-}
-@inproceedings{narayanan2005fast,
-  author    = {Narayanan, Arvind and Shmatikov, Vitaly},
-  title     = {Fast Dictionary Attacks on Passwords Using Time-Space Tradeoff},
-  booktitle = {Proceedings of the ACM Conference on Computer and Communications Security (CCS)},
-  year      = {2005},
-  pages     = {364--372}
-}
-@inproceedings{weir2009pcfg,
-  author    = {Weir, Matt and Aggarwal, Sudhir and de Medeiros, Breno and Glodek, Bill},
-  title     = {Password Cracking Using Probabilistic Context-Free Grammars},
-  booktitle = {IEEE Symposium on Security and Privacy (S\&P)},
-  year      = {2009},
-  pages     = {391--405}
-}
-@inproceedings{melicher2016fast,
-  author    = {Melicher, William and Ur, Blase and Segreti, Sean M. and Komanduri, Saranga and Bauer, Lujo and Christin, Nicolas and Cranor, Lorrie Faith},
-  title     = {Fast, Lean, and Accurate: Modeling Password Guessability Using Neural Networks},
-  booktitle = {USENIX Security Symposium},
-  year      = {2016},
-  pages     = {175--191}
-}
+
+% [CORRECTED] DOI and series added.
 @inproceedings{yu2023honeychunk,
-  author    = {Yu, Fangyi and Martin, Miguel Vargas},
-  title     = {Honey, I Chunked the Passwords: Generating Semantic Honeywords Resistant to Targeted Attacks Using Pre-trained Language Models},
+  author    = {Yu, Fangyi and Vargas Martin, Miguel},
+  title     = {Honey, {I} Chunked the Passwords: Generating Semantic Honeywords Resistant to Targeted Attacks Using Pre-trained Language Models},
   booktitle = {Detection of Intrusions and Malware, and Vulnerability Assessment (DIMVA)},
-  year      = {2023}
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  year      = {2023},
+  doi       = {10.1007/978-3-031-35504-2_5}
 }
+
+% [NEW] Not peer reviewed (SSRN preprint, submitted to Computers & Security).
+@misc{zhang2024multilingual,
+  author       = {Zhang, Xinyi and Zhang, Fan and Chen, Li and Gao, Yanzhao and Qi, Xiaofeng and Liu, Zhengyu},
+  title        = {Research on HoneyWord Generation Mechanism for Multilingual Models Based on {CMP} Strategy and {MH} Algorithm},
+  year         = {2024},
+  howpublished = {SSRN preprint},
+  note         = {Available at \url{https://ssrn.com/abstract=5031401}}
+}
+
 @inproceedings{fauzi2020passgan,
   author    = {Fauzi, Muhammad Ali and Yang, Bian and Martiri, Edlira},
   title     = {{PassGAN} for Honeywords: Evaluating the Defender and the Attacker Strategies},
@@ -134,7 +179,177 @@
   series    = {Advances in Intelligent Systems and Computing},
   volume    = {1188},
   pages     = {391--401},
-  year      = {2020},
   publisher = {Springer},
+  year      = {2020},
   doi       = {10.1007/978-981-15-6048-4_34}
+}
+
+% [NEW]
+@article{saadullah2025performance,
+  author  = {Saadullah, Shahad A. and Mohammed, Saja J.},
+  title   = {Performance Evaluating of Honeyword Generation Methods: Traditional versus {AI}},
+  journal = {Sistemasi: Jurnal Sistem Informasi},
+  volume  = {14},
+  number  = {2},
+  pages   = {597--612},
+  year    = {2025}
+}
+
+% ---------------------------------------------------------------------
+%  Attacks on honeywords
+% ---------------------------------------------------------------------
+
+% [CORRECTED] The previous entry had an invented title and no authors.
+% This is the real title of the PassFilter paper.
+@misc{dani2024passfilter,
+  author        = {Dani, Jimmy and McCulloh, Brandon and Saxena, Nitesh},
+  title         = {When {AI} Defeats Password Deception! A Deep Learning Framework to Distinguish Passwords and Honeywords},
+  year          = {2024},
+  eprint        = {2407.16964},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CR}
+}
+
+% [NEW]
+@thesis{cau2023passflow,
+  author      = {Cau, Pietro},
+  title       = {Honeyword Guessing with {PassFlow}: Using Generative Flows to Attack Honeywords},
+  type        = {Bachelor's thesis},
+  institution = {Sapienza Universit{\`a} di Roma},
+  year        = {2023}
+}
+
+% ---------------------------------------------------------------------
+%  Honeytokens beyond passwords
+% ---------------------------------------------------------------------
+
+% [NEW]
+@misc{reti2024honeytoken,
+  author        = {Reti, Daniel and Becker, Norman and Angeli, Tillmann and Chattopadhyay, Anasuya and Schneider, Daniel and Vollmer, Sebastian and Schotten, Hans D.},
+  title         = {Act as a Honeytoken Generator! An Investigation into Honeytoken Generation with Large Language Models},
+  year          = {2024},
+  eprint        = {2404.16118},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CR}
+}
+
+% [NEW] Not peer reviewed (ResearchGate preprint).
+@misc{chandrarathna2025honeytrap,
+  author       = {Chandrarathna, Ravindu and Wijerathna, Kumudu},
+  title        = {Honey-Trap Tokens for Detecting {LLM}-Generated Academic Review Reports: A Deception-Based Approach},
+  year         = {2025},
+  howpublished = {Preprint, ResearchGate},
+  doi          = {10.13140/RG.2.2.35899.73769}
+}
+
+% ---------------------------------------------------------------------
+%  Password guessing and modelling
+% ---------------------------------------------------------------------
+
+@inproceedings{narayanan2005fast,
+  author    = {Narayanan, Arvind and Shmatikov, Vitaly},
+  title     = {Fast Dictionary Attacks on Passwords Using Time-Space Tradeoff},
+  booktitle = {Proceedings of the 12th ACM Conference on Computer and Communications Security (CCS)},
+  pages     = {364--372},
+  year      = {2005}
+}
+
+@inproceedings{weir2009pcfg,
+  author    = {Weir, Matt and Aggarwal, Sudhir and de Medeiros, Breno and Glodek, Bill},
+  title     = {Password Cracking Using Probabilistic Context-Free Grammars},
+  booktitle = {IEEE Symposium on Security and Privacy (S\&P)},
+  pages     = {391--405},
+  year      = {2009}
+}
+
+@inproceedings{melicher2016fast,
+  author    = {Melicher, William and Ur, Blase and Segreti, Sean M. and Komanduri, Saranga and Bauer, Lujo and Christin, Nicolas and Cranor, Lorrie Faith},
+  title     = {Fast, Lean, and Accurate: Modeling Password Guessability Using Neural Networks},
+  booktitle = {25th USENIX Security Symposium},
+  pages     = {175--191},
+  year      = {2016}
+}
+
+@inproceedings{hitaj2019passgan,
+  author    = {Hitaj, Briland and Gasti, Paolo and Ateniese, Giuseppe and Perez-Cruz, Fernando},
+  title     = {{PassGAN}: A Deep Learning Approach for Password Guessing},
+  booktitle = {Applied Cryptography and Network Security (ACNS)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {11464},
+  pages     = {217--237},
+  publisher = {Springer},
+  year      = {2019},
+  doi       = {10.1007/978-3-030-21568-2_11}
+}
+
+% [NEW]
+@misc{yu2022gnpassgan,
+  author        = {Yu, Fangyi and Vargas Martin, Miguel},
+  title         = {{GNPassGAN}: Improved Generative Adversarial Networks for Trawling Offline Password Guessing},
+  year          = {2022},
+  eprint        = {2208.06943},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CR}
+}
+
+% [NEW]
+@misc{biesner2020generative,
+  author        = {Biesner, David and Cvejoski, Kostadin and Georgiev, Bogdan and Sifa, Rafet and Krupicka, Erik},
+  title         = {Generative Deep Learning Techniques for Password Generation},
+  year          = {2020},
+  eprint        = {2012.05685},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
+}
+
+% [NEW]
+@inproceedings{zheng2025passcross,
+  author    = {Zheng, Mingli and Cheng, Haibo and Yang, Jiahong and Zhang, Wenbo and Wang, Ping},
+  title     = {To Learn Better Character Embeddings in Generative Models for Password Attack},
+  booktitle = {2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  publisher = {IEEE},
+  year      = {2025},
+  doi       = {10.1109/ICASSP49660.2025.10890103}
+}
+
+% ---------------------------------------------------------------------
+%  Machine learning background
+% ---------------------------------------------------------------------
+
+@inproceedings{goodfellow2014generative,
+  author    = {Goodfellow, Ian J. and Pouget-Abadie, Jean and Mirza, Mehdi and Xu, Bing and Warde-Farley, David and Ozair, Sherjil and Courville, Aaron and Bengio, Yoshua},
+  title     = {Generative Adversarial Nets},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2014}
+}
+
+@inproceedings{kim2014cnn,
+  author    = {Kim, Yoon},
+  title     = {Convolutional Neural Networks for Sentence Classification},
+  booktitle = {Proceedings of the Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  pages     = {1746--1751},
+  year      = {2014}
+}
+
+@inproceedings{zhang2015character,
+  author    = {Zhang, Xiang and Zhao, Junbo and LeCun, Yann},
+  title     = {Character-Level Convolutional Networks for Text Classification},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2015}
+}
+
+@inproceedings{mikolov2013distributed,
+  author    = {Mikolov, Tomas and Sutskever, Ilya and Chen, Kai and Corrado, Greg and Dean, Jeffrey},
+  title     = {Distributed Representations of Words and Phrases and their Compositionality},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2013}
+}
+
+@article{bojanowski2017fasttext,
+  author  = {Bojanowski, Piotr and Grave, Edouard and Joulin, Armand and Mikolov, Tomas},
+  title   = {Enriching Word Vectors with Subword Information},
+  journal = {Transactions of the Association for Computational Linguistics},
+  volume  = {5},
+  pages   = {135--146},
+  year    = {2017}
 }

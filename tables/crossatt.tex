@@ -19,14 +19,13 @@
         GAN (Self-Trained) & 0.745 & 0.872 & 0.225 & 0.388 \\
     \bottomrule
   \end{tabular}
-  \caption{Cross-attacker comparison at $N_{\text{train}}=10000$
-  (rational-attacker $\mathrm{ASR}$, \Cref{eq:rational}).
-  The frequency attacker separates the methods far less sharply than the
-  CNN; the filtered HoneyGen variants stay near the frequency floor. The
-  GAN is distinguishable under both attackers --- most strongly by the
-  CNN, which reaches $0.872$ once its ranking is inverted (the real
-  password sits at the bottom), and also by the frequency attacker at
-  $0.388$; it is flat under neither, as discussed in
-  \Cref{sec:results-gan}.}
+    \caption{Cross-attacker comparison at $N_{\text{train}}=10000$, using
+  the rational-attacker $\mathrm{ASR}$ of \Cref{eq:rational}. The
+  frequency attacker separates the methods far less sharply than the
+  CNN, and the filtered HoneyGen variants stay near its floor. The GAN
+  is distinguishable under both: the CNN reaches $0.872$ once its
+  ranking is inverted, since the real password sits at the bottom, and
+  the frequency attacker reaches $0.388$ directly. It is flat under
+  neither, as \Cref{sec:results-gan} discusses.}
   \label{tab:crossatt}
 \end{table}

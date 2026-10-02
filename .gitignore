@@ -1,0 +1,18 @@
+# LaTeX generated files
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.lof
+*.lot
+*.lol
+
+# PDF output (keep source logos, ignore compiled output)
+main.pdf
+final_thesis.pdf
+thesis_v*.pdf
